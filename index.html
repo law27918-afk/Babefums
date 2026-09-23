@@ -766,10 +766,10 @@ async function loadTiendas() {
 async function saveTienda(id, data) {
   syncDot('syncing');
   try {
-    if (id) {
-      await setDoc(doc(db, COL_TIENDAS, id), { ...data, updatedAt: serverTimestamp() });
+    if (id && id.trim() !== '') {
+      await setDoc(doc(db, COL_TIENDAS, id.trim()), { nombre: data.nombre, direccion: data.direccion || '', updatedAt: serverTimestamp() });
     } else {
-      await addDoc(collection(db, COL_TIENDAS), { ...data, createdAt: serverTimestamp() });
+      await addDoc(collection(db, COL_TIENDAS), { nombre: data.nombre, direccion: data.direccion || '', createdAt: serverTimestamp() });
     }
     await loadTiendas();
     syncDot('ok');
@@ -1426,7 +1426,6 @@ function renderTiendasBody() {
         <div style="flex:1">
           <div style="font-size:14px">${t.nombre}</div>
           ${t.direccion ? `<div style="font-size:11px;color:var(--text-muted)">${t.direccion}</div>` : ''}
-          ${t.url ? `<a href="${t.url}" target="_blank" style="font-size:11px;color:var(--gold-dim);text-decoration:none">${t.url}</a>` : ''}
         </div>
         <button class="btn btn-outline btn-sm" onclick="openEditTiendaForm('${t.id}')">✏️</button>
         <button class="btn btn-outline btn-sm" onclick="window._deleteTienda('${t.id}')" style="color:var(--text-muted)">✕</button>
@@ -1436,8 +1435,7 @@ function renderTiendasBody() {
     <div id="tiendaFormPanel" style="display:none;flex-direction:column;gap:12px;background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:4px">
       <input type="hidden" id="tFormId">
       <div class="field"><label>Nombre *</label><input type="text" id="tNombre" placeholder="Ej: El Machetazo"></div>
-      <div class="field"><label>Dirección / Notas</label><input type="text" id="tDireccion" placeholder="Ej: Albrook Mall"></div>
-      <div class="field"><label>Sitio web</label><input type="url" id="tUrl" placeholder="https://…"></div>
+      <div class="field"><label>Ubicación / Notas</label><input type="text" id="tDireccion" placeholder="Ej: Albrook Mall, piso 2"></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-outline" style="flex:1" onclick="closeTiendaForm()">Cancelar</button>
         <button class="btn btn-gold" style="flex:1" onclick="saveTiendaForm()">Guardar</button>
@@ -1454,8 +1452,8 @@ function openAddTiendaForm() {
   document.getElementById('tFormId').value = '';
   document.getElementById('tNombre').value = '';
   document.getElementById('tDireccion').value = '';
-  document.getElementById('tUrl').value = '';
   p.style.display = 'flex';
+  setTimeout(() => document.getElementById('tNombre')?.focus(), 50);
 }
 
 function openEditTiendaForm(id) {
@@ -1465,7 +1463,6 @@ function openEditTiendaForm(id) {
   document.getElementById('tFormId').value = id;
   document.getElementById('tNombre').value = t.nombre || '';
   document.getElementById('tDireccion').value = t.direccion || '';
-  document.getElementById('tUrl').value = t.url || '';
   p.style.display = 'flex';
 }
 
@@ -1477,10 +1474,10 @@ function closeTiendaForm() {
 async function saveTiendaForm() {
   const nombre = document.getElementById('tNombre')?.value.trim();
   if (!nombre) { toast('El nombre es requerido'); return; }
-  const id         = document.getElementById('tFormId')?.value || null;
-  const direccion  = document.getElementById('tDireccion')?.value.trim() || '';
-  const url        = document.getElementById('tUrl')?.value.trim() || '';
-  await saveTienda(id, { nombre, direccion, url });
+  const id        = document.getElementById('tFormId')?.value || null;
+  const direccion = document.getElementById('tDireccion')?.value.trim() || '';
+  await saveTienda(id || null, { nombre, direccion });
+  // saveTienda ya llama loadTiendas internamente — solo re-renderizar
   renderTiendasBody();
   toast('Tienda guardada ✓');
 }
