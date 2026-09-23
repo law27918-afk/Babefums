@@ -233,6 +233,217 @@
     header { background: var(--bg); backdrop-filter: none; }
   }
 
+
+  /* ══ SHOWCASE MODAL (animación estilo Lottie) ══ */
+  .showcase-backdrop {
+    position: fixed; inset: 0; z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .showcase-backdrop.open { opacity: 1; pointer-events: all; }
+
+  .showcase-bg {
+    position: absolute; inset: 0;
+    background: #000;
+    opacity: 0;
+    transition: opacity .25s ease;
+  }
+  .showcase-backdrop.open .showcase-bg { opacity: .88; }
+
+  .showcase-card {
+    position: relative; z-index: 1;
+    width: min(420px, 92vw);
+    aspect-ratio: 4/5;
+    border-radius: 28px;
+    overflow: hidden;
+    transform: scale(.88);
+    transition: transform .5s cubic-bezier(0.32, 0.72, 0, 1);
+    box-shadow: 0 32px 80px rgba(0,0,0,.7);
+  }
+  .showcase-backdrop.open .showcase-card { transform: scale(1); }
+
+  /* Fondo degradado por owner */
+  .showcase-card-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(155deg, #0d1117 0%, #0d1117 40%, #141416 100%);
+    z-index: 0;
+  }
+  .showcase-card-bg.law-bg {
+    background: linear-gradient(155deg, #0a1628 0%, #0d1e38 45%, #091423 100%);
+  }
+  .showcase-card-bg.mily-bg {
+    background: linear-gradient(155deg, #1a0d1a 0%, #280d22 45%, #150a14 100%);
+  }
+
+  /* Partículas decorativas */
+  .showcase-particles {
+    position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
+  }
+  .showcase-particles span {
+    position: absolute; border-radius: 50%;
+    animation: particle-float linear infinite;
+    opacity: 0;
+  }
+  @keyframes particle-float {
+    0%   { opacity: 0; transform: translateY(0) scale(0); }
+    10%  { opacity: .6; }
+    90%  { opacity: .2; }
+    100% { opacity: 0; transform: translateY(-120px) scale(1.5); }
+  }
+
+  /* Imagen del perfume */
+  .showcase-img-wrap {
+    position: absolute;
+    bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 70%; z-index: 2;
+    transform-origin: bottom center;
+    transform: translateX(-50%) scale(1.5);
+    transition: transform .9s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .showcase-backdrop.open .showcase-img-wrap {
+    /* scale 1.5→1 + spring settle */
+    animation: img-settle .9s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  }
+  @keyframes img-settle {
+    0%   { transform: translateX(-50%) scale(1.5); }
+    60%  { transform: translateX(-50%) scale(0.93); }
+    78%  { transform: translateX(-50%) scale(1.04); }
+    90%  { transform: translateX(-50%) scale(0.99); }
+    100% { transform: translateX(-50%) scale(1); }
+  }
+  .showcase-img-wrap img {
+    width: 100%; display: block;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,.6));
+    object-fit: contain; max-height: 260px;
+  }
+  .showcase-img-placeholder {
+    width: 100%; max-height: 260px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 0;
+  }
+  .showcase-img-placeholder svg { opacity: .15; }
+
+  /* Gradiente bottom */
+  .showcase-gradient {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 65%; z-index: 3;
+    background: linear-gradient(to top, rgba(0,0,0,.95) 30%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* Contenido de texto */
+  .showcase-content {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    z-index: 4; padding: 28px 28px 24px;
+  }
+
+  /* Badge owner */
+  .showcase-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 100px; font-size: 11px;
+    font-weight: 500; letter-spacing: .06em; margin-bottom: 12px;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .showcase-backdrop.open .showcase-badge {
+    opacity: 1; transform: translateY(0);
+    transition-delay: .5s;
+  }
+  .showcase-badge.law  { background: rgba(123,156,190,.2); color: var(--law);  border: 1px solid rgba(123,156,190,.3); }
+  .showcase-badge.mily { background: rgba(190,123,156,.2); color: var(--mily); border: 1px solid rgba(190,123,156,.3); }
+
+  /* Nombre — stagger por palabra */
+  .showcase-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(26px, 6vw, 36px);
+    font-weight: 300; line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #fff; margin-bottom: 6px;
+    overflow: hidden;
+  }
+  .showcase-name .word {
+    display: inline-block;
+    opacity: 0; transform: translateY(100%);
+    animation: word-appear .45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes word-appear {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Marca */
+  .showcase-brand {
+    font-size: 12px; color: rgba(255,255,255,.45);
+    letter-spacing: .12em; text-transform: uppercase;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .showcase-backdrop.open .showcase-brand {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* Stars */
+  .showcase-stars {
+    display: flex; gap: 2px; margin-top: 10px;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .showcase-backdrop.open .showcase-stars {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* Meta row */
+  .showcase-meta {
+    display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .showcase-chip {
+    padding: 5px 12px; border-radius: 100px;
+    font-size: 11px; border: 1px solid rgba(255,255,255,.12);
+    color: rgba(255,255,255,.55); background: rgba(255,255,255,.05);
+    opacity: 0; transform: translateY(6px);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .showcase-backdrop.open .showcase-chip { opacity: 1; transform: translateY(0); }
+
+  /* Botón abrir detalle */
+  .showcase-btn {
+    margin-top: 16px; width: 100%;
+    padding: 13px; border-radius: 12px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.15);
+    color: #fff; font-size: 13px; font-family: inherit;
+    cursor: pointer; letter-spacing: .04em;
+    backdrop-filter: blur(8px);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity .35s ease, transform .35s ease, background .2s;
+  }
+  .showcase-backdrop.open .showcase-btn { opacity: 1; transform: translateY(0); }
+  .showcase-btn:hover { background: rgba(255,255,255,.18); }
+  .showcase-btn:active { transform: scale(0.97) translateY(0); background: rgba(255,255,255,.08); }
+
+  /* Close button */
+  .showcase-close {
+    position: absolute; top: 16px; right: 16px; z-index: 5;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1);
+    color: rgba(255,255,255,.7); font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; backdrop-filter: blur(8px);
+    opacity: 0; transform: scale(0.8);
+    transition: opacity .3s ease, transform .3s ease, background .2s;
+  }
+  .showcase-backdrop.open .showcase-close { opacity: 1; transform: scale(1); transition-delay: .2s; }
+  .showcase-close:hover { background: rgba(255,255,255,.15); color: #fff; }
+  .showcase-close:active { transform: scale(0.92); }
+
+  /* Accents (círculos decorativos de color) */
+  .showcase-accent {
+    position: absolute; border-radius: 50%;
+    filter: blur(60px); pointer-events: none; z-index: 1;
+    opacity: 0; transition: opacity .8s ease;
+  }
+  .showcase-backdrop.open .showcase-accent { opacity: 1; transition-delay: .1s; }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -306,6 +517,48 @@
 <div class="stats-bar" id="statsBar"></div>
 <div class="grid" id="grid"></div>
 
+
+<!-- SHOWCASE MODAL -->
+<div class="showcase-backdrop" id="showcaseModal">
+  <div class="showcase-bg" onclick="closeShowcase()"></div>
+  <div class="showcase-card" id="showcaseCard">
+    <div class="showcase-card-bg" id="showcaseBg"></div>
+    <div class="showcase-particles" id="showcaseParticles"></div>
+    <div class="showcase-accent" id="showcaseAccent1" style="width:200px;height:200px;top:-60px;right:-40px;"></div>
+    <div class="showcase-accent" id="showcaseAccent2" style="width:160px;height:160px;bottom:30%;left:-50px;"></div>
+    <div class="showcase-img-wrap" id="showcaseImgWrap"></div>
+    <div class="showcase-gradient"></div>
+    <div class="showcase-content">
+      <div class="showcase-badge" id="showcaseBadge"></div>
+      <div class="showcase-name" id="showcaseName"></div>
+      <div class="showcase-brand" id="showcaseBrand"></div>
+      <div class="showcase-stars" id="showcaseStars"></div>
+      <div class="showcase-meta" id="showcaseMeta"></div>
+      <button class="showcase-btn" id="showcaseBtn" onclick="openDetailFromShowcase()">
+        Ver detalles completos →
+      </button>
+    </div>
+    <button class="showcase-close" onclick="closeShowcase()">✕</button>
+  </div>
+</div>
+
+
+<!-- MODAL TIENDAS -->
+<div class="modal-backdrop" id="tiendasModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Tiendas</span>
+      <button class="modal-close" onclick="closeTiendasModal()">✕</button>
+    </div>
+    <div class="modal-body" id="tiendasBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-gold" style="width:100%" onclick="openAddTiendaForm()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nueva tienda
+      </button>
+    </div>
+  </div>
+</div>
 <!-- MODAL AGREGAR -->
 <div class="modal-backdrop" id="addModal">
   <div class="modal">
@@ -402,8 +655,9 @@
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore, collection, doc, setDoc,
-         deleteDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, doc, setDoc, addDoc,
+         deleteDoc, onSnapshot, getDocs, query, orderBy,
+         serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 /* ══ CONFIG ══ */
 const firebaseConfig = {
@@ -419,7 +673,9 @@ const OCASIONES  = ['','Diario','Trabajo','Noche','Casual','Especial / Evento','
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
-const COL = 'perfumes';
+const COL       = 'perfumes';
+const COL_TIENDAS = 'tiendas';
+const COL_PRECIOS = 'precios'; // precios/{perfumeId}/registros
 
 /* ══ DATOS INICIALES (seed solo si Firestore está vacío) ══ */
 const INITIAL = [
@@ -463,6 +719,8 @@ let filterProbado = 'all';
 let sortKey       = 'name';
 let searchQ       = '';
 let detailId      = null;
+let tiendas       = [];   // espejo local de tiendas
+let preciosCache  = {};   // cache de precios por perfumeId
 let editRating    = 0;
 let editProbado   = false;
 let addOwner      = 'law';
@@ -493,11 +751,79 @@ async function fsDel(id) {
   } catch(e) { console.error(e); syncDot('err'); toast('Error al eliminar ⚠️'); }
 }
 
+/* ══ TIENDAS HELPERS ══ */
+async function loadTiendas() {
+  try {
+    const snap = await getDocs(query(collection(db, COL_TIENDAS), orderBy('nombre')));
+    tiendas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { console.error('Error cargando tiendas:', e); }
+}
+
+async function saveTienda(id, data) {
+  syncDot('syncing');
+  try {
+    if (id) {
+      await setDoc(doc(db, COL_TIENDAS, id), { ...data, updatedAt: serverTimestamp() });
+    } else {
+      await addDoc(collection(db, COL_TIENDAS), { ...data, createdAt: serverTimestamp() });
+    }
+    await loadTiendas();
+    syncDot('ok');
+  } catch(e) { console.error(e); syncDot('err'); toast('Error al guardar tienda ⚠️'); }
+}
+
+async function deleteTienda(id) {
+  if (!confirm('¿Eliminar esta tienda?')) return;
+  syncDot('syncing');
+  try {
+    await deleteDoc(doc(db, COL_TIENDAS, id));
+    await loadTiendas();
+    syncDot('ok');
+    toast('Tienda eliminada');
+  } catch(e) { console.error(e); syncDot('err'); }
+}
+
+/* ══ PRECIOS HELPERS ══ */
+async function loadPrecios(perfumeId) {
+  try {
+    const snap = await getDocs(
+      query(collection(db, COL_PRECIOS, perfumeId, 'registros'), orderBy('fecha', 'desc'))
+    );
+    preciosCache[perfumeId] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return preciosCache[perfumeId];
+  } catch(e) { console.error('Error cargando precios:', e); return []; }
+}
+
+async function savePrecio(perfumeId, data) {
+  syncDot('syncing');
+  try {
+    await addDoc(collection(db, COL_PRECIOS, perfumeId, 'registros'), {
+      ...data,
+      fecha: serverTimestamp(),
+      fechaStr: new Date().toLocaleDateString('es-PA', { day:'2-digit', month:'short', year:'numeric' })
+    });
+    delete preciosCache[perfumeId]; // invalidar cache
+    syncDot('ok');
+    toast('Precio registrado ✓');
+  } catch(e) { console.error(e); syncDot('err'); toast('Error al registrar precio ⚠️'); }
+}
+
+async function deletePrecio(perfumeId, precioId) {
+  if (!confirm('¿Eliminar este registro de precio?')) return;
+  try {
+    await deleteDoc(doc(db, COL_PRECIOS, perfumeId, 'registros', precioId));
+    delete preciosCache[perfumeId];
+    toast('Registro eliminado');
+    // Refrescar panel
+    openDetail(perfumeId);
+  } catch(e) { console.error(e); }
+}
+
 /* ══ IMAGEN ══ */
-async function fetchImage(p) {
+async function fetchImage(p, skip = 0) {
   if (!SCRIPT_URL) return null;
   try {
-    const url = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}`;
+    const url = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}&skip=${skip}`;
     const r = await fetch(url);
     if (!r.ok) return null;
     const d = await r.json();
@@ -585,7 +911,7 @@ function renderGrid() {
   const list=filtered(), grid=document.getElementById('grid');
   if (!list.length) { grid.innerHTML=`<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><p>Sin resultados</p></div>`; return; }
   grid.innerHTML = list.map(p=>`
-    <div class="card" data-id="${p.id}" onclick="window._openDetail('${p.id}')">
+    <div class="card" data-id="${p.id}" onclick="window._openShowcase('${p.id}')">
       <span class="card-badge badge-${p.owner}">${p.owner==='law'?'Law':'Mily'}</span>
       ${p.probado?'<span class="badge-probado">Probado</span>':''}
       ${cardImgHTML(p)}
@@ -726,61 +1052,186 @@ function toggleDetailProbado() {
   if (!editProbado){ editRating=0; refreshPicker('dStarPicker',0); }
 }
 
-function openDetail(id) {
-  const p=perfumes.find(x=>x.id===id); if(!p) return;
-  detailId=id; editRating=p.rating; editProbado=p.probado;
-  document.getElementById('dTitle').textContent=p.name;
-  const opts=OCASIONES.map(o=>`<option value="${o}" ${p.ocasion===o?'selected':''}>${o||'— Sin definir —'}</option>`).join('');
-  document.getElementById('detailBody').innerHTML=`
-    <div class="detail-img-wrap" id="dImgWrap">
-      ${p.img?`<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`:p.imgFetched?`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`:`<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen…</span></div>`}
-    </div>
-    <div class="img-controls">
-      <button class="btn btn-outline btn-sm" id="btnRebuscar" onclick="window._rebuscarImagen('${id}')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/></svg> Buscar otra
-      </button>
-      <button class="btn btn-outline btn-sm" onclick="window._toggleImgUrl()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Pegar URL
-      </button>
-    </div>
-    <div id="imgUrlPanel" style="display:none;">
-      <div class="field">
-        <label>URL de imagen</label>
-        <div style="display:flex;gap:8px;">
-          <input type="url" id="dImgUrl" placeholder="https://…" value="${p.img||''}" style="flex:1">
-          <button class="btn btn-gold btn-sm" onclick="window._aplicarUrlImagen('${id}')">Aplicar</button>
+/* ══ TABS DEL DETALLE ══ */
+let detailTab = 'info'; // 'info' | 'precios'
+
+function switchDetailTab(t) {
+  detailTab = t;
+  document.querySelectorAll('.dtab').forEach(b => b.classList.toggle('dtab-active', b.dataset.dtab === t));
+  document.getElementById('dPanelInfo').style.display    = t === 'info'    ? '' : 'none';
+  document.getElementById('dPanelPrecios').style.display = t === 'precios' ? '' : 'none';
+  if (t === 'precios') renderPreciosPanel(detailId);
+}
+
+async function renderPreciosPanel(id) {
+  const panel = document.getElementById('dPanelPrecios');
+  if (!panel) return;
+  panel.innerHTML = `<div style="text-align:center;padding:20px"><div class="spinner"></div></div>`;
+  const lista = await loadPrecios(id);
+  const tiendaOpts = tiendas.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+  const noTiendas = tiendas.length === 0;
+
+  panel.innerHTML = `
+    <!-- Registrar nuevo precio -->
+    <div style="background:var(--surface2);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-weight:500;">Registrar precio</div>
+      ${noTiendas ? `<p style="font-size:12px;color:var(--text-muted);">Primero agrega una tienda en <button class="btn-link" onclick="openTiendasModal()">Gestionar tiendas</button></p>` : `
+      <div class="field-row">
+        <div class="field"><label>Precio *</label><input type="text" id="pPrecio" placeholder="Ej: $58.99"></div>
+        <div class="field">
+          <label>Tienda *</label>
+          <select id="pTienda"><option value="">— Seleccionar —</option>${tiendaOpts}</select>
         </div>
       </div>
-    </div>
-    <div><div class="detail-name">${p.name}</div><div class="detail-brand">${p.brand}</div></div>
-    <div class="detail-grid">
-      <div class="detail-field"><div class="detail-field-label">Para quien</div><div style="color:var(--${p.owner})">${p.owner==='law'?'🔵 Law':'🩷 Mily'}</div></div>
-      <div class="detail-field"><div class="detail-field-label">Probado</div>
-        <label class="probado-toggle" onclick="toggleDetailProbado()">
-          <div class="toggle-track${editProbado?' on':''}" id="dToggleTrack"><div class="toggle-thumb"></div></div>
-          <span id="dProbadoLabel">${editProbado?'Sí':'No'}</span>
-        </label>
+      <div class="field-row">
+        <div class="field">
+          <label>Tamaño</label>
+          <select id="pTamano">
+            <option value="">— —</option>
+            <option>30 ml</option><option>50 ml</option><option>75 ml</option>
+            <option>100 ml</option><option>150 ml</option><option>200 ml</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Presentación</label>
+          <select id="pPresentacion">
+            <option value="">— —</option>
+            <option>Caja comercial</option><option>Tester</option>
+            <option>Travel size</option><option>Sin caja</option>
+          </select>
+        </div>
       </div>
+      <button class="btn btn-gold" style="width:100%" onclick="window._registrarPrecio('${id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Guardar registro
+      </button>`}
     </div>
-    <div class="field">
-      <label>Calificación</label>
-      <div id="dStarPicker" class="half-star-picker${editProbado?'':' disabled'}"></div>
-      <span class="rating-locked" id="dRatingLockMsg" style="${editProbado?'display:none':''}">Marca "Probado" para calificar</span>
+
+    <!-- Historial -->
+    <div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">
+        Historial (${lista.length})
+      </div>
+      ${lista.length === 0
+        ? `<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:20px 0">Sin registros aún</p>`
+        : lista.map(r => {
+            const tienda = tiendas.find(t => t.id === r.tiendaId);
+            const tags = [r.tamano, r.presentacion].filter(Boolean).join(' · ');
+            return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:15px;color:var(--gold);font-weight:500">${r.precio}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
+                  ${tienda ? tienda.nombre : '—'}${tags ? ' · ' + tags : ''}
+                </div>
+                <div style="font-size:10px;color:var(--border);margin-top:2px">${r.fechaStr || ''}</div>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="window._deletePrecio('${id}','${r.id}')" style="flex-shrink:0;padding:4px 8px;font-size:11px;color:var(--text-muted)">✕</button>
+            </div>`;
+          }).join('')
+      }
     </div>
-    <div class="field"><label>Ocasión</label><select id="dOcasion">${opts}</select></div>
-    <div class="detail-grid">
-      <div class="field"><label>Precio</label><input type="text" id="dPrice" value="${p.price||''}" placeholder="—"></div>
-      <div class="field"><label>Lugar</label><input type="text" id="dLugar" value="${p.lugar||''}" placeholder="—"></div>
+
+    <!-- Gestionar tiendas -->
+    <button class="btn btn-outline" style="width:100%;margin-top:4px" onclick="openTiendasModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Gestionar tiendas
+    </button>
+  `;
+}
+
+async function registrarPrecio(id) {
+  const precio  = document.getElementById('pPrecio')?.value.trim();
+  const tiendaId = document.getElementById('pTienda')?.value;
+  if (!precio)   { toast('Ingresa un precio'); return; }
+  if (!tiendaId) { toast('Selecciona una tienda'); return; }
+  const tamano       = document.getElementById('pTamano')?.value || '';
+  const presentacion = document.getElementById('pPresentacion')?.value || '';
+  const tienda = tiendas.find(t => t.id === tiendaId);
+  await savePrecio(id, { precio, tiendaId, tiendaNombre: tienda?.nombre || '', tamano, presentacion });
+  renderPreciosPanel(id);
+}
+
+function openDetail(id) {
+  const p=perfumes.find(x=>x.id===id); if(!p) return;
+  detailId=id; editRating=p.rating; editProbado=p.probado; detailTab='info';
+  document.getElementById('dTitle').textContent=p.name;
+  const opts=OCASIONES.map(o=>`<option value="${o}" ${p.ocasion===o?'selected':''}>${o||'— Sin definir —'}</option>`).join('');
+
+  document.getElementById('detailBody').innerHTML=`
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <button class="dtab dtab-active" data-dtab="info" onclick="switchDetailTab('info')" style="flex:1;padding:9px;font-size:12px;background:var(--gold);border:none;color:#0c0c0e;font-weight:500;font-family:inherit;cursor:pointer;">Info</button>
+      <button class="dtab" data-dtab="precios" onclick="switchDetailTab('precios')" style="flex:1;padding:9px;font-size:12px;background:transparent;border:none;color:var(--text-muted);font-family:inherit;cursor:pointer;transition:all .2s;">Precios</button>
     </div>
-    <div class="field"><label>Notas</label><textarea id="dNotas" rows="3">${p.notas||''}</textarea></div>`;
+
+    <!-- Panel INFO -->
+    <div id="dPanelInfo" style="display:flex;flex-direction:column;gap:16px;">
+      <div class="detail-img-wrap" id="dImgWrap">
+        ${p.img?`<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`:p.imgFetched?`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`:`<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen…</span></div>`}
+      </div>
+      <div class="img-controls">
+        <button class="btn btn-outline btn-sm" id="btnRebuscar" onclick="window._rebuscarImagen('${id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/></svg> Buscar otra
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="window._toggleImgUrl()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Pegar URL
+        </button>
+      </div>
+      <div id="imgUrlPanel" style="display:none;">
+        <div class="field">
+          <label>URL de imagen</label>
+          <div style="display:flex;gap:8px;">
+            <input type="url" id="dImgUrl" placeholder="https://…" value="${p.img||''}" style="flex:1">
+            <button class="btn btn-gold btn-sm" onclick="window._aplicarUrlImagen('${id}')">Aplicar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edición de nombre y marca -->
+      <div class="field-row">
+        <div class="field"><label>Nombre</label><input type="text" id="dEditName" value="${p.name}"></div>
+        <div class="field"><label>Marca</label><input type="text" id="dEditBrand" value="${p.brand}"></div>
+      </div>
+
+      <!-- Owner -->
+      <div class="field">
+        <label>Para quien</label>
+        <div class="owner-toggle">
+          <button class="owner-btn${p.owner==='law'?' sel-law':''}" id="dOwnerLaw" onclick="setDetailOwner('law')">🔵 Law</button>
+          <button class="owner-btn${p.owner==='mily'?' sel-mily':''}" id="dOwnerMily" onclick="setDetailOwner('mily')">🩷 Mily</button>
+        </div>
+      </div>
+
+      <!-- Probado -->
+      <label class="probado-toggle" onclick="toggleDetailProbado()">
+        <div class="toggle-track${editProbado?' on':''}" id="dToggleTrack"><div class="toggle-thumb"></div></div>
+        <span id="dProbadoLabel">${editProbado?'Ya lo probé':'No probado aún'}</span>
+      </label>
+
+      <!-- Rating -->
+      <div class="field">
+        <label>Calificación</label>
+        <div id="dStarPicker" class="half-star-picker${editProbado?'':' disabled'}"></div>
+        <span class="rating-locked" id="dRatingLockMsg" style="${editProbado?'display:none':''}">Marca "Probado" para calificar</span>
+      </div>
+
+      <div class="field"><label>Ocasión</label><select id="dOcasion">${opts}</select></div>
+      <div class="field"><label>Notas</label><textarea id="dNotas" rows="3">${p.notas||''}</textarea></div>
+    </div>
+
+    <!-- Panel PRECIOS -->
+    <div id="dPanelPrecios" style="display:none;flex-direction:column;gap:14px;"></div>
+  `;
 
   buildStarPicker('dStarPicker', getEditRating, setEditRating);
+  // guardar owner editable
+  window._detailOwner = p.owner;
 
   document.getElementById('detailFooter').innerHTML=`
     <button class="btn btn-danger" onclick="window._deletePerfume('${id}')">Eliminar</button>
     <div style="flex:1"></div>
     <button class="btn btn-outline" id="detailModalClose2">Cancelar</button>
-    <button class="btn btn-gold" onclick="window._saveDetail('${id}')">Guardar cambios</button>`;
+    <button class="btn btn-gold" onclick="window._saveDetail('${id}')">Guardar</button>`;
   document.getElementById('detailModalClose2').onclick=closeDetailModal;
   document.getElementById('detailModal').classList.add('open');
 
@@ -797,14 +1248,24 @@ function openDetail(id) {
   }
 }
 
+function setDetailOwner(o) {
+  window._detailOwner = o;
+  document.getElementById('dOwnerLaw').className  = 'owner-btn'+(o==='law' ?' sel-law':'');
+  document.getElementById('dOwnerMily').className = 'owner-btn'+(o==='mily'?' sel-mily':'');
+}
+
 async function saveDetail(id) {
   const p=perfumes.find(x=>x.id===id); if(!p) return;
-  const updated={ ...p, rating:editRating, probado:editProbado,
-    price:document.getElementById('dPrice').value.trim(),
-    lugar:document.getElementById('dLugar').value.trim(),
-    ocasion:document.getElementById('dOcasion').value,
-    notas:document.getElementById('dNotas').value.trim() };
-  if (!editProbado) updated.rating=0;
+  const updated={
+    ...p,
+    name:    (document.getElementById('dEditName')?.value.trim() || p.name),
+    brand:   (document.getElementById('dEditBrand')?.value.trim() ?? p.brand),
+    owner:   (window._detailOwner || p.owner),
+    rating:  editProbado ? editRating : 0,
+    probado: editProbado,
+    ocasion: document.getElementById('dOcasion')?.value ?? p.ocasion,
+    notas:   document.getElementById('dNotas')?.value.trim() ?? p.notas,
+  };
   await fsSet(id, updated);
   closeDetailModal(); toast('Guardado ✓');
 }
@@ -826,15 +1287,28 @@ async function rebuscarImagen(id) {
   if(btn){ btn.disabled=true; btn.innerHTML='<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Buscando…'; }
   const wrap=document.getElementById('dImgWrap');
   if(wrap) wrap.innerHTML='<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen…</span></div>';
-  // reset para forzar nueva búsqueda
-  await fsSet(id,{ ...p, img:'', imgFetched:false });
-  const url=await fetchImage(p);
-  const updated={ ...p, img:url||'', imgFetched:true };
+
+  // Avanzar al siguiente resultado — nunca repetir el mismo
+  const nextSkip = (p.imgIndex || 0) + 1;
+
+  const url = await fetchImage(p, nextSkip);
+
+  // Si llegamos al final (sin resultado), volver desde el resultado 1
+  const finalSkip = url ? nextSkip : 0;
+  const updated = { ...p, img: url || p.img, imgFetched: true, imgIndex: finalSkip };
   await fsSet(id, updated);
-  if(wrap) wrap.innerHTML=url?`<img src="${url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`:`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+
+  if(wrap) wrap.innerHTML = url
+    ? `<img src="${url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`
+    : `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+
   const inp=document.getElementById('dImgUrl'); if(inp&&url) inp.value=url;
   if(btn){ btn.disabled=false; btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/></svg> Buscar otra'; }
-  toast(url?'Nueva imagen encontrada ✓':'No se encontró imagen');
+
+  const msg = url
+    ? `Imagen ${nextSkip + 1} de los resultados ✓`
+    : 'Sin más resultados, volviendo al primero';
+  toast(msg);
 }
 
 async function aplicarUrlImagen(id) {
@@ -900,11 +1374,216 @@ document.getElementById('sortSelect').onchange = e=>{ sortKey=e.target.value; re
 document.getElementById('searchInput').oninput  = e=>{ searchQ=e.target.value; render(); };
 document.getElementById('addModal').onclick    = e=>{ if(e.target===e.currentTarget) closeAddModal(); };
 document.getElementById('detailModal').onclick = e=>{ if(e.target===e.currentTarget) closeDetailModal(); };
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal(); closeDetailModal(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal(); closeDetailModal(); closeShowcase(); closeTiendasModal(); } });
+
+
+
+/* ══ TIENDAS MODAL ══ */
+function openTiendasModal() {
+  renderTiendasBody();
+  document.getElementById('tiendasModal').classList.add('open');
+}
+function closeTiendasModal() {
+  document.getElementById('tiendasModal').classList.remove('open');
+}
+
+function renderTiendasBody() {
+  const body = document.getElementById('tiendasBody');
+  if (!body) return;
+
+  const lista = tiendas.length === 0
+    ? `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px 0">Sin tiendas aún</p>`
+    : tiendas.map(t => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1">
+          <div style="font-size:14px">${t.nombre}</div>
+          ${t.direccion ? `<div style="font-size:11px;color:var(--text-muted)">${t.direccion}</div>` : ''}
+          ${t.url ? `<a href="${t.url}" target="_blank" style="font-size:11px;color:var(--gold-dim);text-decoration:none">${t.url}</a>` : ''}
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="openEditTiendaForm('${t.id}')">✏️</button>
+        <button class="btn btn-outline btn-sm" onclick="window._deleteTienda('${t.id}')" style="color:var(--text-muted)">✕</button>
+      </div>`).join('');
+
+  body.innerHTML = `
+    <div id="tiendaFormPanel" style="display:none;flex-direction:column;gap:12px;background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:4px">
+      <input type="hidden" id="tFormId">
+      <div class="field"><label>Nombre *</label><input type="text" id="tNombre" placeholder="Ej: El Machetazo"></div>
+      <div class="field"><label>Dirección / Notas</label><input type="text" id="tDireccion" placeholder="Ej: Albrook Mall"></div>
+      <div class="field"><label>Sitio web</label><input type="url" id="tUrl" placeholder="https://…"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="flex:1" onclick="closeTiendaForm()">Cancelar</button>
+        <button class="btn btn-gold" style="flex:1" onclick="saveTiendaForm()">Guardar</button>
+      </div>
+    </div>
+    <div id="tiendaList">${lista}</div>
+  `;
+}
+
+function openAddTiendaForm() {
+  renderTiendasBody();
+  const p = document.getElementById('tiendaFormPanel');
+  if (!p) return;
+  document.getElementById('tFormId').value = '';
+  document.getElementById('tNombre').value = '';
+  document.getElementById('tDireccion').value = '';
+  document.getElementById('tUrl').value = '';
+  p.style.display = 'flex';
+}
+
+function openEditTiendaForm(id) {
+  const t = tiendas.find(x => x.id === id); if (!t) return;
+  const p = document.getElementById('tiendaFormPanel');
+  if (!p) return;
+  document.getElementById('tFormId').value = id;
+  document.getElementById('tNombre').value = t.nombre || '';
+  document.getElementById('tDireccion').value = t.direccion || '';
+  document.getElementById('tUrl').value = t.url || '';
+  p.style.display = 'flex';
+}
+
+function closeTiendaForm() {
+  const p = document.getElementById('tiendaFormPanel');
+  if (p) p.style.display = 'none';
+}
+
+async function saveTiendaForm() {
+  const nombre = document.getElementById('tNombre')?.value.trim();
+  if (!nombre) { toast('El nombre es requerido'); return; }
+  const id         = document.getElementById('tFormId')?.value || null;
+  const direccion  = document.getElementById('tDireccion')?.value.trim() || '';
+  const url        = document.getElementById('tUrl')?.value.trim() || '';
+  await saveTienda(id, { nombre, direccion, url });
+  renderTiendasBody();
+  toast('Tienda guardada ✓');
+}
+
+window._deleteTienda  = deleteTienda;
+window._deletePrecio  = deletePrecio;
+window._registrarPrecio = registrarPrecio;
+
+/* ══ SHOWCASE ══ */
+let showcaseCurrentId = null;
+
+function openShowcase(id) {
+  const p = perfumes.find(x => x.id === id);
+  if (!p) return;
+  showcaseCurrentId = id;
+
+  const isLaw = p.owner === 'law';
+  const accent1 = isLaw ? 'rgba(123,156,190,0.25)' : 'rgba(190,123,156,0.25)';
+  const accent2 = isLaw ? 'rgba(61,90,120,0.2)'    : 'rgba(120,61,90,0.2)';
+
+  // Fondo
+  const bg = document.getElementById('showcaseBg');
+  bg.className = `showcase-card-bg ${p.owner}-bg`;
+
+  // Accents de color
+  document.getElementById('showcaseAccent1').style.background = accent1;
+  document.getElementById('showcaseAccent2').style.background = accent2;
+
+  // Imagen
+  const wrap = document.getElementById('showcaseImgWrap');
+  if (p.img) {
+    wrap.innerHTML = `<img src="${p.img}" alt="${p.name}">`;
+  } else {
+    wrap.innerHTML = `<div class="showcase-img-placeholder">
+      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".8">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    </div>`;
+  }
+
+  // Badge
+  const badge = document.getElementById('showcaseBadge');
+  badge.className = `showcase-badge ${p.owner}`;
+  badge.innerHTML = p.owner === 'law' ? '🔵 Law' : '🩷 Mily';
+
+  // Nombre con stagger por palabra
+  const words = p.name.split(' ');
+  document.getElementById('showcaseName').innerHTML = words
+    .map((w, i) => `<span class="word" style="animation-delay:${.52 + i * .06}s">${w}</span>`)
+    .join('<span style="display:inline-block;width:.3em"></span>');
+
+  // Brand
+  const brandEl = document.getElementById('showcaseBrand');
+  brandEl.textContent = p.brand || '';
+  brandEl.style.transitionDelay = `${.52 + words.length * .06 + .1}s`;
+
+  // Stars
+  const starsEl = document.getElementById('showcaseStars');
+  if (p.rating && p.probado) {
+    starsEl.innerHTML = starsHTML(p.rating, 16);
+    starsEl.style.transitionDelay = `${.6 + words.length * .06}s`;
+    starsEl.style.display = 'flex';
+  } else {
+    starsEl.style.display = 'none';
+  }
+
+  // Meta chips
+  const meta = document.getElementById('showcaseMeta');
+  const chips = [];
+  if (p.probado) chips.push('✓ Probado');
+  if (p.ocasion) chips.push(p.ocasion);
+  if (p.price)   chips.push(p.price);
+  if (p.lugar)   chips.push(p.lugar);
+  meta.innerHTML = chips
+    .map((ch, i) => `<span class="showcase-chip" style="transition-delay:${.65 + i * .06 + words.length * .04}s">${ch}</span>`)
+    .join('');
+
+  // Botón delay
+  document.getElementById('showcaseBtn').style.transitionDelay = `${.75 + words.length * .04}s`;
+
+  // Partículas
+  spawnParticles(p.owner);
+
+  // Abrir
+  document.getElementById('showcaseModal').classList.add('open');
+
+  // Haptic
+  if ('vibrate' in navigator) navigator.vibrate(6);
+}
+
+function spawnParticles(owner) {
+  const container = document.getElementById('showcaseParticles');
+  container.innerHTML = '';
+  const color = owner === 'law' ? '#7b9cbe' : '#be7b9c';
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement('span');
+    const size = Math.random() * 4 + 2;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      background:${color};
+      left:${Math.random() * 100}%;
+      bottom:${Math.random() * 60}%;
+      animation-duration:${3 + Math.random() * 4}s;
+      animation-delay:${Math.random() * 2}s;
+    `;
+    container.appendChild(s);
+  }
+}
+
+function closeShowcase() {
+  document.getElementById('showcaseModal').classList.remove('open');
+  setTimeout(() => {
+    document.getElementById('showcaseParticles').innerHTML = '';
+    document.getElementById('showcaseImgWrap').innerHTML = '';
+  }, 400);
+}
+
+function openDetailFromShowcase() {
+  closeShowcase();
+  setTimeout(() => {
+    if (showcaseCurrentId) openDetail(showcaseCurrentId);
+  }, 320);
+}
+
+window._openShowcase = openShowcase;
+window._openDetail    = openDetail;
 
 /* ══ INIT ══ */
 buildStarPicker('addStarPicker', getAddRating, setAddRating);
 syncDot('syncing');
+loadTiendas();
 
 // Header border on scroll
 window.addEventListener('scroll', () => {
