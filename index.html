@@ -444,6 +444,70 @@
   }
   .showcase-backdrop.open .showcase-accent { opacity: 1; transition-delay: .1s; }
 
+
+  /* ══ IMAGE PICKER MODAL ══ */
+  .imgpicker-backdrop {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; opacity: 0; pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  .imgpicker-backdrop.open { opacity: 1; pointer-events: all; }
+  .imgpicker-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; width: 100%; max-width: 560px;
+    max-height: 86vh; display: flex; flex-direction: column;
+    transform: translateY(12px); transition: transform .25s ease;
+    overflow: hidden;
+  }
+  .imgpicker-backdrop.open .imgpicker-box { transform: translateY(0); }
+  .imgpicker-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .imgpicker-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 300; color: var(--gold); }
+  .imgpicker-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .imgpicker-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; padding: 16px; overflow-y: auto; flex: 1;
+  }
+  .imgpicker-item {
+    aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+    cursor: pointer; position: relative;
+    border: 2px solid transparent;
+    transition: border-color .15s, transform .15s;
+    background: var(--surface2);
+  }
+  .imgpicker-item:hover { border-color: var(--gold-dim); transform: scale(1.03); }
+  .imgpicker-item.selected { border-color: var(--gold); }
+  .imgpicker-item img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .imgpicker-item .imgpicker-check {
+    position: absolute; top: 6px; right: 6px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--gold); display: none;
+    align-items: center; justify-content: center;
+    font-size: 12px; color: #000;
+  }
+  .imgpicker-item.selected .imgpicker-check { display: flex; }
+  .imgpicker-item .imgpicker-err {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--text-muted); text-align: center; padding: 8px;
+  }
+  .imgpicker-loading {
+    grid-column: 1/-1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    padding: 40px; color: var(--text-muted); font-size: 13px;
+  }
+  .imgpicker-footer {
+    display: flex; gap: 10px; padding: 14px 20px;
+    border-top: 1px solid var(--border); flex-shrink: 0;
+  }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -547,6 +611,26 @@
 </div>
 
 
+
+<!-- IMAGE PICKER MODAL -->
+<div class="imgpicker-backdrop" id="imgPickerModal">
+  <div class="imgpicker-box">
+    <div class="imgpicker-header">
+      <div>
+        <div class="imgpicker-title">Elegir imagen</div>
+        <div class="imgpicker-sub" id="imgPickerSub">Selecciona la que mejor represente el perfume</div>
+      </div>
+      <button class="modal-close" onclick="closeImgPicker()">✕</button>
+    </div>
+    <div class="imgpicker-grid" id="imgPickerGrid">
+      <div class="imgpicker-loading"><div class="spinner"></div><span>Buscando imágenes…</span></div>
+    </div>
+    <div class="imgpicker-footer">
+      <button class="btn btn-outline" style="flex:1" onclick="closeImgPicker()">Cancelar</button>
+      <button class="btn btn-gold" style="flex:1" id="imgPickerConfirm" disabled onclick="confirmImgPicker()">Usar esta imagen</button>
+    </div>
+  </div>
+</div>
 <!-- MODAL TIENDAS -->
 <div class="modal-backdrop" id="tiendasModal" style="z-index:400">
   <div class="modal">
@@ -554,7 +638,20 @@
       <span class="modal-title">Tiendas</span>
       <button class="modal-close" onclick="closeTiendasModal()">✕</button>
     </div>
-    <div class="modal-body" id="tiendasBody"></div>
+    <div class="modal-body" id="tiendasBody">
+      <!-- Form (oculto por defecto) -->
+      <div id="tiendaFormPanel" style="display:none;flex-direction:column;gap:12px;background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:4px">
+        <input type="hidden" id="tFormId">
+        <div class="field"><label>Nombre *</label><input type="text" id="tNombre" placeholder="Ej: El Machetazo"></div>
+        <div class="field"><label>Ubicación / Notas</label><input type="text" id="tDireccion" placeholder="Ej: Albrook Mall, piso 2"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" style="flex:1" onclick="closeTiendaForm()">Cancelar</button>
+          <button class="btn btn-gold" style="flex:1" onclick="saveTiendaForm()">Guardar</button>
+        </div>
+      </div>
+      <!-- Lista -->
+      <div id="tiendaList"></div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-gold" style="width:100%" onclick="openAddTiendaForm()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -833,6 +930,18 @@ async function fetchImage(p, skip = 0) {
     const d = await r.json();
     return d.imageUrl || null;
   } catch { return null; }
+}
+
+// Pedir todas las imágenes disponibles de una vez
+async function fetchAllImages(p) {
+  if (!SCRIPT_URL) return [];
+  try {
+    const url = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}&all=1`;
+    const r = await fetch(url);
+    if (!r.ok) return [];
+    const d = await r.json();
+    return Array.isArray(d.imageUrls) ? d.imageUrls.filter(Boolean) : (d.imageUrl ? [d.imageUrl] : []);
+  } catch { return []; }
 }
 
 /* ══ ESTRELLAS ══ */
@@ -1176,8 +1285,8 @@ function openDetail(id) {
         ${p.img?`<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`:p.imgFetched?`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`:`<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen…</span></div>`}
       </div>
       <div class="img-controls">
-        <button class="btn btn-outline btn-sm" id="btnRebuscar" onclick="window._rebuscarImagen('${id}')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/></svg> Buscar otra
+        <button class="btn btn-outline btn-sm" id="btnRebuscar" onclick="openImgPicker('${id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Elegir imagen
         </button>
         <button class="btn btn-outline btn-sm" onclick="window._toggleImgUrl()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Pegar URL
@@ -1402,83 +1511,185 @@ document.getElementById('sortSelect').onchange = e=>{ sortKey=e.target.value; re
 document.getElementById('searchInput').oninput  = e=>{ searchQ=e.target.value; render(); };
 document.getElementById('addModal').onclick    = e=>{ if(e.target===e.currentTarget) closeAddModal(); };
 document.getElementById('detailModal').onclick = e=>{ if(e.target===e.currentTarget) closeDetailModal(); };
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal(); closeDetailModal(); closeShowcase(); closeTiendasModal(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal(); closeDetailModal(); closeShowcase(); closeTiendasModal(); closeImgPicker(); } });
 
 
+
+
+/* ══ IMAGE PICKER ══ */
+let imgPickerPerfumeId = null;
+let imgPickerSelected  = null;
+
+async function openImgPicker(id) {
+  const p = perfumes.find(x => x.id === id);
+  if (!p) return;
+  imgPickerPerfumeId = id;
+  imgPickerSelected  = null;
+
+  // Actualizar sub-título
+  document.getElementById('imgPickerSub').textContent = `${p.name} — ${p.brand || 'sin marca'}`;
+
+  // Resetear grid y botón
+  document.getElementById('imgPickerGrid').innerHTML =
+    '<div class="imgpicker-loading"><div class="spinner"></div><span>Buscando imágenes…</span></div>';
+  const confirmBtn = document.getElementById('imgPickerConfirm');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Usar esta imagen';
+
+  // Abrir modal
+  document.getElementById('imgPickerModal').classList.add('open');
+
+  // Buscar imágenes
+  const urls = await fetchAllImages(p);
+
+  if (urls.length === 0) {
+    document.getElementById('imgPickerGrid').innerHTML =
+      '<div class="imgpicker-loading"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>No se encontraron imágenes</span></div>';
+    return;
+  }
+
+  document.getElementById('imgPickerGrid').innerHTML = urls.map((url, i) => `
+    <div class="imgpicker-item" id="imgpi-${i}" onclick="selectImgPicker(${i}, '${url.replace(/'/g,"\'")}')">
+      <img src="${url}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'imgpicker-err\'>No disponible</div>'">
+      <div class="imgpicker-check">✓</div>
+    </div>
+  `).join('');
+}
+
+function selectImgPicker(idx, url) {
+  imgPickerSelected = url;
+  document.querySelectorAll('.imgpicker-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById('imgpi-' + idx)?.classList.add('selected');
+  const btn = document.getElementById('imgPickerConfirm');
+  btn.disabled = false;
+  btn.textContent = 'Usar esta imagen';
+}
+
+async function confirmImgPicker() {
+  if (!imgPickerSelected || !imgPickerPerfumeId) return;
+  const p = perfumes.find(x => x.id === imgPickerPerfumeId);
+  if (!p) return;
+
+  const btn = document.getElementById('imgPickerConfirm');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  const history = Array.isArray(p.imgHistory) ? p.imgHistory : [];
+  await fsSet(imgPickerPerfumeId, {
+    ...p,
+    img: imgPickerSelected,
+    imgFetched: true,
+    imgHistory: [...history, imgPickerSelected].slice(-20)
+  });
+
+  // Actualizar UI del detalle si está abierto
+  const wrap = document.getElementById('dImgWrap');
+  if (wrap) wrap.innerHTML = `<img src="${imgPickerSelected}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`;
+  const inp = document.getElementById('dImgUrl');
+  if (inp) inp.value = imgPickerSelected;
+
+  closeImgPicker();
+  toast('Imagen actualizada ✓');
+}
+
+function closeImgPicker() {
+  document.getElementById('imgPickerModal').classList.remove('open');
+  imgPickerPerfumeId = null;
+  imgPickerSelected  = null;
+}
+
+window.closeImgPicker   = closeImgPicker;
+window.confirmImgPicker = confirmImgPicker;
+window.selectImgPicker  = selectImgPicker;
+window.openImgPicker    = openImgPicker;
 
 /* ══ TIENDAS MODAL ══ */
+// Estado del form de tiendas (separado del render de la lista)
+let tiendaFormMode = null; // null | 'add' | { id, nombre, direccion }
+
 function openTiendasModal() {
-  renderTiendasBody();
+  tiendaFormMode = null;
+  renderTiendasList();
+  renderTiendaForm();
   document.getElementById('tiendasModal').classList.add('open');
 }
+
 function closeTiendasModal() {
+  tiendaFormMode = null;
   document.getElementById('tiendasModal').classList.remove('open');
 }
 
-function renderTiendasBody() {
-  const body = document.getElementById('tiendasBody');
-  if (!body) return;
-
-  const lista = tiendas.length === 0
-    ? `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:16px 0">Sin tiendas aún</p>`
-    : tiendas.map(t => `
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-        <div style="flex:1">
-          <div style="font-size:14px">${t.nombre}</div>
-          ${t.direccion ? `<div style="font-size:11px;color:var(--text-muted)">${t.direccion}</div>` : ''}
-        </div>
-        <button class="btn btn-outline btn-sm" onclick="openEditTiendaForm('${t.id}')">✏️</button>
-        <button class="btn btn-outline btn-sm" onclick="window._deleteTienda('${t.id}')" style="color:var(--text-muted)">✕</button>
-      </div>`).join('');
-
-  body.innerHTML = `
-    <div id="tiendaFormPanel" style="display:none;flex-direction:column;gap:12px;background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:4px">
-      <input type="hidden" id="tFormId">
-      <div class="field"><label>Nombre *</label><input type="text" id="tNombre" placeholder="Ej: El Machetazo"></div>
-      <div class="field"><label>Ubicación / Notas</label><input type="text" id="tDireccion" placeholder="Ej: Albrook Mall, piso 2"></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-outline" style="flex:1" onclick="closeTiendaForm()">Cancelar</button>
-        <button class="btn btn-gold" style="flex:1" onclick="saveTiendaForm()">Guardar</button>
+function renderTiendasList() {
+  const list = document.getElementById('tiendaList');
+  if (!list) return;
+  if (tiendas.length === 0) {
+    list.innerHTML = `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0">Sin tiendas aún</p>`;
+    return;
+  }
+  list.innerHTML = tiendas.map(t => `
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;color:var(--text)">${t.nombre}</div>
+        ${t.direccion ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${t.direccion}</div>` : ''}
       </div>
-    </div>
-    <div id="tiendaList">${lista}</div>
-  `;
+      <button class="btn btn-outline btn-sm" onclick="openEditTiendaForm('${t.id}')">✏️</button>
+      <button class="btn btn-outline btn-sm" onclick="window._deleteTienda('${t.id}')" style="color:var(--text-muted)">✕</button>
+    </div>`).join('');
 }
 
-function openAddTiendaForm() {
-  renderTiendasBody();
-  const p = document.getElementById('tiendaFormPanel');
-  if (!p) return;
-  document.getElementById('tFormId').value = '';
-  document.getElementById('tNombre').value = '';
-  document.getElementById('tDireccion').value = '';
-  p.style.display = 'flex';
+function renderTiendaForm() {
+  const panel = document.getElementById('tiendaFormPanel');
+  if (!panel) return;
+  if (!tiendaFormMode) {
+    panel.style.display = 'none';
+    return;
+  }
+  const isEdit = tiendaFormMode !== 'add';
+  document.getElementById('tFormId').value      = isEdit ? tiendaFormMode.id        : '';
+  document.getElementById('tNombre').value      = isEdit ? tiendaFormMode.nombre    : '';
+  document.getElementById('tDireccion').value   = isEdit ? tiendaFormMode.direccion : '';
+  panel.style.display = 'flex';
   setTimeout(() => document.getElementById('tNombre')?.focus(), 50);
 }
 
+function openAddTiendaForm() {
+  tiendaFormMode = 'add';
+  renderTiendaForm();
+  const panel = document.getElementById('tiendaFormPanel');
+  if (panel) panel.style.display = 'flex';
+}
+
 function openEditTiendaForm(id) {
-  const t = tiendas.find(x => x.id === id); if (!t) return;
-  const p = document.getElementById('tiendaFormPanel');
-  if (!p) return;
-  document.getElementById('tFormId').value = id;
-  document.getElementById('tNombre').value = t.nombre || '';
-  document.getElementById('tDireccion').value = t.direccion || '';
-  p.style.display = 'flex';
+  const t = tiendas.find(x => x.id === id);
+  if (!t) return;
+  tiendaFormMode = { id: t.id, nombre: t.nombre || '', direccion: t.direccion || '' };
+  renderTiendaForm();
+  const panel = document.getElementById('tiendaFormPanel');
+  if (panel) panel.style.display = 'flex';
 }
 
 function closeTiendaForm() {
-  const p = document.getElementById('tiendaFormPanel');
-  if (p) p.style.display = 'none';
+  tiendaFormMode = null;
+  const panel = document.getElementById('tiendaFormPanel');
+  if (panel) panel.style.display = 'none';
 }
 
 async function saveTiendaForm() {
   const nombre = document.getElementById('tNombre')?.value.trim();
   if (!nombre) { toast('El nombre es requerido'); return; }
-  const id        = document.getElementById('tFormId')?.value || null;
+  const id        = document.getElementById('tFormId')?.value.trim() || null;
   const direccion = document.getElementById('tDireccion')?.value.trim() || '';
-  await saveTienda(id || null, { nombre, direccion });
-  // saveTienda ya llama loadTiendas internamente — solo re-renderizar
-  renderTiendasBody();
+
+  // Deshabilitar botón mientras guarda
+  const btn = document.querySelector('#tiendaFormPanel .btn-gold');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+
+  await saveTienda(id, { nombre, direccion }); // saveTienda hace loadTiendas internamente
+
+  // Cerrar form y refrescar lista con datos ya actualizados en `tiendas`
+  tiendaFormMode = null;
+  const panel = document.getElementById('tiendaFormPanel');
+  if (panel) panel.style.display = 'none';
+  renderTiendasList();
   toast('Tienda guardada ✓');
 }
 
