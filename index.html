@@ -820,7 +820,7 @@ const COL       = 'perfumes';
 const COL_TIENDAS = 'tiendas';
 const COL_PRECIOS = 'precios'; // precios/{perfumeId}/registros
 
-/* ══ DATOS INICIALES (seed solo si Firestore está vacío) ══ */
+/* ══ DATOS INICIALES (seed solo si Firestore esta vacio) ══ */
 const INITIAL = [
   { name:'Solo Ella Elixir',                      brand:'Loewe',             owner:'mily' },
   { name:'Miss Dior Eau de Parfum',               brand:'Dior',              owner:'mily' },
@@ -884,14 +884,14 @@ async function fsSet(id, data) {
   try {
     await setDoc(doc(db, COL, id), { ...data, updatedAt: serverTimestamp() });
     syncDot('ok');
-  } catch(e) { console.error(e); syncDot('err'); toast('Error al guardar ⚠️'); }
+  } catch(e) { console.error(e); syncDot('err'); toast('Error al guardar!'); }
 }
 async function fsDel(id) {
   syncDot('syncing');
   try {
     await deleteDoc(doc(db, COL, id));
     syncDot('ok');
-  } catch(e) { console.error(e); syncDot('err'); toast('Error al eliminar ⚠️'); }
+  } catch(e) { console.error(e); syncDot('err'); toast('Error al eliminar!'); }
 }
 
 /* ══ TIENDAS HELPERS ══ */
@@ -912,11 +912,11 @@ async function saveTienda(id, data) {
     }
     await loadTiendas();
     syncDot('ok');
-  } catch(e) { console.error(e); syncDot('err'); toast('Error al guardar tienda ⚠️'); }
+  } catch(e) { console.error(e); syncDot('err'); toast('Error al guardar tienda!'); }
 }
 
 async function deleteTienda(id) {
-  if (!confirm('¿Eliminar esta tienda?')) return;
+  if (!confirm('Eliminar esta tienda?')) return;
   syncDot('syncing');
   try {
     await deleteDoc(doc(db, COL_TIENDAS, id));
@@ -932,13 +932,13 @@ async function loadPrecios(perfumeId) {
     const snap = await getDocs(
       query(collection(db, COL_PRECIOS, perfumeId, 'registros'), orderBy('fecha', 'desc'))
     );
-    // ordenar también por precio (menor primero) para el display
+    // ordenar tambien por precio (menor primero) para el display
     preciosCache[perfumeId] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     return preciosCache[perfumeId];
   } catch(e) { console.error('Error cargando precios:', e); return []; }
 }
 
-// Extrae número de un string de precio "$58.99" → 58.99
+// Extrae numero de un string de precio "$58.99" -> 58.99
 function parsePrecio(str) {
   const n = parseFloat((str || '').replace(/[^0-9.]/g, ''));
   return isNaN(n) ? null : n;
@@ -954,7 +954,7 @@ async function savePrecio(perfumeId, data) {
     });
     delete preciosCache[perfumeId];
 
-    // Actualizar precioMin en el documento del perfume si este es más barato
+    // Actualizar precioMin en el documento del perfume si este es mas barato
     const p = perfumes.find(x => x.id === perfumeId);
     if (p) {
       const nuevoNum   = parsePrecio(data.precio);
@@ -974,12 +974,12 @@ async function savePrecio(perfumeId, data) {
     }
 
     syncDot('ok');
-    toast('Precio registrado ✓');
-  } catch(e) { console.error(e); syncDot('err'); toast('Error al registrar precio ⚠️'); }
+    toast('Precio registrado ');
+  } catch(e) { console.error(e); syncDot('err'); toast('Error al registrar precio!'); }
 }
 
 async function deletePrecio(perfumeId, precioId) {
-  if (!confirm('¿Eliminar este registro de precio?')) return;
+  if (!confirm('Eliminar este registro de precio?')) return;
   try {
     await deleteDoc(doc(db, COL_PRECIOS, perfumeId, 'registros', precioId));
     delete preciosCache[perfumeId];
@@ -991,7 +991,7 @@ async function deletePrecio(perfumeId, precioId) {
       if (restantes.length === 0) {
         await fsSet(perfumeId, { ...p, precioMin:'', precioMinNum:null, precioMinTienda:'', precioMinTamano:'', precioMinPresent:'' });
       } else {
-        // Ordenar por precio numérico y tomar el mínimo
+        // Ordenar por precio numerico y tomar el minimo
         const sorted = [...restantes].sort((a,b) => (parsePrecio(a.precio)||9999) - (parsePrecio(b.precio)||9999));
         const min = sorted[0];
         await fsSet(perfumeId, {
@@ -1007,7 +1007,7 @@ async function deletePrecio(perfumeId, precioId) {
 
     toast('Registro eliminado');
     renderPreciosPanel(perfumeId);
-  } catch(e) { console.error(e); toast('Error al eliminar ⚠️'); }
+  } catch(e) { console.error(e); toast('Error al eliminar!'); }
 }
 
 /* ══ IMAGEN ══ */
@@ -1022,7 +1022,7 @@ async function fetchImage(p, skip = 0) {
   } catch { return null; }
 }
 
-// Pedir todas las imágenes — soporta ?all=1 (script nuevo) o fallback con skips paralelos
+// Pedir todas las imagenes - soporta ?all=1 (script nuevo) o fallback con skips paralelos
 async function fetchAllImages(p) {
   if (!SCRIPT_URL) return [];
   try {
@@ -1031,11 +1031,11 @@ async function fetchAllImages(p) {
     const r = await fetch(urlAll);
     if (r.ok) {
       const d = await r.json();
-      // Si devuelve array con más de 1 → script nuevo
+      // Si devuelve array con mas de 1 -> script nuevo
       if (Array.isArray(d.imageUrls) && d.imageUrls.length > 1) {
         return d.imageUrls.filter(Boolean);
       }
-      // Si devuelve imageUrls con 1 o imageUrl → script viejo, usar fallback
+      // Si devuelve imageUrls con 1 o imageUrl -> script viejo, usar fallback
     }
   } catch {}
 
@@ -1095,7 +1095,7 @@ function refreshPicker(containerId, rating) {
     svg.replaceWith(tmp.firstChild);
   });
   const v=document.getElementById(containerId+'Val');
-  if(v) v.textContent = rating>0 ? rating.toFixed(1) : '—';
+  if(v) v.textContent = rating>0 ? rating.toFixed(1) : '-';
 }
 
 /* ══ RENDER ══ */
@@ -1149,13 +1149,13 @@ function renderGrid() {
         ${p.precioMin
           ? `<div class="card-price">
                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:.6;vertical-align:middle;margin-right:3px"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-               ${p.precioMin}${p.precioMinTienda ? ' · ' + p.precioMinTienda : ''}
+               ${p.precioMin}${p.precioMinTienda ? ' - ' + p.precioMinTienda : ''}
              </div>`
-          : p.price ? `<div class="card-price">${p.price}${p.lugar?' · '+p.lugar:''}</div>` : ''}
+          : p.price ? `<div class="card-price">${p.price}${p.lugar?' - '+p.lugar:''}</div>` : ''}
       </div>
     </div>`).join('');
 
-  // buscar imágenes faltantes
+  // buscar imagenes faltantes
   list.forEach(p=>{
     if (!p.img && !p.imgFetched && SCRIPT_URL) {
       fetchImage(p).then(url=>{
@@ -1173,7 +1173,7 @@ function startListener() {
   onSnapshot(collection(db, COL), snap => {
     perfumes = snap.docs.map(d=>({ id:d.id, ...d.data() }));
     render();
-    // seed si está vacío
+    // seed si esta vacio
     if (perfumes.length === 0) seedInitial();
     // ocultar loading
     const ls = document.getElementById('loadingScreen');
@@ -1256,16 +1256,16 @@ async function saveAdd() {
     if (!name){ toast('Escribe el nombre del perfume'); return; }
     const id='p'+Date.now();
     await fsSet(id,{ name, brand:document.getElementById('fBrand').value.trim(), owner:addOwner, rating:addRating, probado:addProbado, price:document.getElementById('fPrice').value.trim(), lugar:document.getElementById('fLugar').value.trim(), ocasion:document.getElementById('fOcasion').value, notas:document.getElementById('fNotas').value.trim(), img:'', imgFetched:false, createdAt:Date.now() });
-    closeAddModal(); toast('Perfume agregado ✓');
+    closeAddModal(); toast('Perfume agregado ');
   } else {
     const lines=document.getElementById('fBulk').value.split('\n').map(l=>l.trim()).filter(Boolean);
-    if (!lines.length){ toast('La lista está vacía'); return; }
+    if (!lines.length){ toast('La lista esta vacia'); return; }
     const now=Date.now();
     for(let i=0;i<lines.length;i++){
       const pts=lines[i].split(',').map(s=>s.trim());
       await fsSet('p'+(now+i),{ name:pts[0]||lines[i], brand:pts[1]||'', owner:bulkOwner, rating:0, probado:false, price:'', lugar:'', ocasion:'', notas:'', img:'', imgFetched:false, createdAt:now+i });
     }
-    closeAddModal(); toast(`${lines.length} perfume(s) agregado(s) ✓`);
+    closeAddModal(); toast(`${lines.length} perfume(s) agregado(s) `);
   }
 }
 
@@ -1277,7 +1277,7 @@ function toggleDetailProbado() {
   if ('vibrate' in navigator) navigator.vibrate(8);
   editProbado=!editProbado;
   document.getElementById('dToggleTrack')?.classList.toggle('on',editProbado);
-  const lbl=document.getElementById('dProbadoLabel'); if(lbl) lbl.textContent=editProbado?'Sí':'No';
+  const lbl=document.getElementById('dProbadoLabel'); if(lbl) lbl.textContent=editProbado?'Si':'No';
   document.getElementById('dStarPicker')?.classList.toggle('disabled',!editProbado);
   const msg=document.getElementById('dRatingLockMsg'); if(msg) msg.style.display=editProbado?'none':'';
   if (!editProbado){ editRating=0; refreshPicker('dStarPicker',0); }
@@ -1306,18 +1306,18 @@ async function renderPreciosPanel(id) {
   const min = lista[0] || null;
 
   panel.innerHTML = `
-    <!-- Precio mínimo destacado -->
+    <!-- Precio minimo destacado -->
     ${min ? `
     <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;">
       <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mejor precio encontrado</div>
       <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
         <span style="font-size:26px;font-weight:400;color:var(--gold);font-family:'Cormorant Garamond',serif;letter-spacing:-.02em">${min.precio}</span>
-        ${min.tamano || min.presentacion ? `<span style="font-size:12px;color:var(--text-muted)">${[min.tamano, min.presentacion].filter(Boolean).join(' · ')}</span>` : ''}
+        ${min.tamano || min.presentacion ? `<span style="font-size:12px;color:var(--text-muted)">${[min.tamano, min.presentacion].filter(Boolean).join(' - ')}</span>` : ''}
       </div>
-      <div style="font-size:12px;color:var(--text-muted)">${tiendas.find(t=>t.id===min.tiendaId)?.nombre || min.tiendaNombre || '—'} · ${min.fechaStr || ''}</div>
+      <div style="font-size:12px;color:var(--text-muted)">${tiendas.find(t=>t.id===min.tiendaId)?.nombre || min.tiendaNombre || '-'} - ${min.fechaStr || ''}</div>
     </div>` : `
     <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;text-align:center">
-      <div style="font-size:13px;color:var(--text-muted)">Sin precios registrados aún</div>
+      <div style="font-size:13px;color:var(--text-muted)">Sin precios registrados aun</div>
     </div>`}
 
     <!-- Historial -->
@@ -1326,25 +1326,25 @@ async function renderPreciosPanel(id) {
       <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Historial (${lista.length})</div>
       ${lista.map((r, idx) => {
           const tienda = tiendas.find(t => t.id === r.tiendaId);
-          const tags = [r.tamano, r.presentacion].filter(Boolean).join(' · ');
+          const tags = [r.tamano, r.presentacion].filter(Boolean).join(' - ');
           const isMin = idx === 0;
           return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);">
             <div style="flex:1;min-width:0;">
               <div style="display:flex;align-items:center;gap:6px">
                 <span style="font-size:15px;color:${isMin?'var(--gold)':'var(--text)'};font-weight:500">${r.precio}</span>
-                ${isMin ? '<span style="font-size:9px;background:rgba(201,169,110,.12);color:var(--gold);border:0.5px solid rgba(201,169,110,.3);padding:2px 6px;border-radius:100px;letter-spacing:.04em">más barato</span>' : ''}
+                ${isMin ? '<span style="font-size:9px;background:rgba(201,169,110,.12);color:var(--gold);border:0.5px solid rgba(201,169,110,.3);padding:2px 6px;border-radius:100px;letter-spacing:.04em">mas barato</span>' : ''}
               </div>
               <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
-                ${tienda?.nombre || r.tiendaNombre || '—'}${tags ? ' · ' + tags : ''}
+                ${tienda?.nombre || r.tiendaNombre || '-'}${tags ? ' - ' + tags : ''}
               </div>
               <div style="font-size:10px;color:var(--text-muted);opacity:.5;margin-top:1px">${r.fechaStr || ''}</div>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="window._deletePrecio('${id}','${r.id}')" style="flex-shrink:0;padding:4px 8px;font-size:11px;color:var(--text-muted)">✕</button>
+            <button class="btn btn-outline btn-sm" onclick="window._deletePrecio('${id}','${r.id}')" style="flex-shrink:0;padding:4px 8px;font-size:11px;color:var(--text-muted)">x</button>
           </div>`;
         }).join('')}
     </div>` : ''}
 
-    <!-- Botón registrar precio (colapsa/expande form) -->
+    <!-- Boton registrar precio (colapsa/expande form) -->
     <div>
       <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="togglePrecioForm('${id}')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -1355,29 +1355,29 @@ async function renderPreciosPanel(id) {
     <!-- Form colapsado -->
     <div id="precioFormPanel" style="display:none;flex-direction:column;gap:12px;background:var(--surface2);border-radius:12px;padding:14px;">
       ${noTiendas ? `
-        <p style="font-size:13px;color:var(--text-muted);text-align:center">Sin tiendas aún —
+        <p style="font-size:13px;color:var(--text-muted);text-align:center">Sin tiendas aun -
           <button class="btn-link" onclick="openTiendasModal()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:13px;padding:0">agregar tienda</button>
         </p>` : `
       <div class="field-row">
         <div class="field"><label>Precio *</label><input type="text" id="pPrecio" placeholder="Ej: $58.99"></div>
         <div class="field">
           <label>Tienda *</label>
-          <select id="pTienda"><option value="">— Seleccionar —</option>${tiendaOpts}</select>
+          <select id="pTienda"><option value="">- Seleccionar -</option>${tiendaOpts}</select>
         </div>
       </div>
       <div class="field-row">
         <div class="field">
-          <label>Tamaño</label>
+          <label>Tamano</label>
           <select id="pTamano">
-            <option value="">— —</option>
+            <option value="">- -</option>
             <option>30 ml</option><option>50 ml</option><option>75 ml</option>
             <option>100 ml</option><option>150 ml</option><option>200 ml</option>
           </select>
         </div>
         <div class="field">
-          <label>Presentación</label>
+          <label>Presentacion</label>
           <select id="pPresentacion">
-            <option value="">— —</option>
+            <option value="">- -</option>
             <option>Caja comercial</option><option>Tester</option>
             <option>Travel size</option><option>Sin caja</option>
           </select>
@@ -1418,7 +1418,7 @@ function openDetail(id) {
   const p=perfumes.find(x=>x.id===id); if(!p) return;
   detailId=id; editRating=p.rating; editProbado=p.probado; detailTab='info';
   document.getElementById('dTitle').textContent=p.name;
-  const opts=OCASIONES.map(o=>`<option value="${o}" ${p.ocasion===o?'selected':''}>${o||'— Sin definir —'}</option>`).join('');
+  const opts=OCASIONES.map(o=>`<option value="${o}" ${p.ocasion===o?'selected':''}>${o||'- Sin definir -'}</option>`).join('');
 
   document.getElementById('detailBody').innerHTML=`
     <!-- Tabs -->
@@ -1430,7 +1430,7 @@ function openDetail(id) {
     <!-- Panel INFO -->
     <div id="dPanelInfo" style="display:flex;flex-direction:column;gap:16px;">
       <div class="detail-img-wrap" id="dImgWrap">
-        ${p.img?`<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`:p.imgFetched?`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`:`<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen…</span></div>`}
+        ${p.img?`<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`:p.imgFetched?`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`:`<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen...</span></div>`}
       </div>
       <div class="img-controls">
         <button class="btn btn-outline btn-sm" id="btnRebuscar" onclick="openImgPicker('${id}')">
@@ -1444,13 +1444,13 @@ function openDetail(id) {
         <div class="field">
           <label>URL de imagen</label>
           <div style="display:flex;gap:8px;">
-            <input type="url" id="dImgUrl" placeholder="https://…" value="${p.img||''}" style="flex:1">
+            <input type="url" id="dImgUrl" placeholder="https://?" value="${p.img||''}" style="flex:1">
             <button class="btn btn-gold btn-sm" onclick="window._aplicarUrlImagen('${id}')">Aplicar</button>
           </div>
         </div>
       </div>
 
-      <!-- Edición de nombre y marca -->
+      <!-- Edicion de nombre y marca -->
       <div class="field-row">
         <div class="field"><label>Nombre</label><input type="text" id="dEditName" value="${p.name}"></div>
         <div class="field"><label>Marca</label><input type="text" id="dEditBrand" value="${p.brand}"></div>
@@ -1460,25 +1460,25 @@ function openDetail(id) {
       <div class="field">
         <label>Para quien</label>
         <div class="owner-toggle">
-          <button class="owner-btn${p.owner==='law'?' sel-law':''}" id="dOwnerLaw" onclick="setDetailOwner('law')">🔵 Law</button>
-          <button class="owner-btn${p.owner==='mily'?' sel-mily':''}" id="dOwnerMily" onclick="setDetailOwner('mily')">🩷 Mily</button>
+          <button class="owner-btn${p.owner==='law'?' sel-law':''}" id="dOwnerLaw" onclick="setDetailOwner('law')">:law: Law</button>
+          <button class="owner-btn${p.owner==='mily'?' sel-mily':''}" id="dOwnerMily" onclick="setDetailOwner('mily')">:mily: Mily</button>
         </div>
       </div>
 
       <!-- Probado -->
       <label class="probado-toggle" onclick="toggleDetailProbado()">
         <div class="toggle-track${editProbado?' on':''}" id="dToggleTrack"><div class="toggle-thumb"></div></div>
-        <span id="dProbadoLabel">${editProbado?'Ya lo probé':'No probado aún'}</span>
+        <span id="dProbadoLabel">${editProbado?'Ya lo probe':'No probado aun'}</span>
       </label>
 
       <!-- Rating -->
       <div class="field">
-        <label>Calificación</label>
+        <label>Calificacion</label>
         <div id="dStarPicker" class="half-star-picker${editProbado?'':' disabled'}"></div>
         <span class="rating-locked" id="dRatingLockMsg" style="${editProbado?'display:none':''}">Marca "Probado" para calificar</span>
       </div>
 
-      <div class="field"><label>Ocasión</label><select id="dOcasion">${opts}</select></div>
+      <div class="field"><label>Ocasion</label><select id="dOcasion">${opts}</select></div>
       <div class="field"><label>Notas</label><textarea id="dNotas" rows="3">${p.notas||''}</textarea></div>
     </div>
 
@@ -1530,11 +1530,11 @@ async function saveDetail(id) {
     notas:   document.getElementById('dNotas')?.value.trim() ?? p.notas,
   };
   await fsSet(id, updated);
-  closeDetailModal(); toast('Guardado ✓');
+  closeDetailModal(); toast('Guardado ');
 }
 
 async function deletePerfume(id) {
-  if (!confirm('¿Eliminar este perfume?')) return;
+  if (!confirm('Eliminar este perfume?')) return;
   await fsDel(id);
   closeDetailModal(); toast('Perfume eliminado');
 }
@@ -1551,8 +1551,8 @@ async function rebuscarImagen(id) {
   const btn  = document.getElementById('btnRebuscar');
   const wrap = document.getElementById('dImgWrap');
 
-  if (btn)  { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Buscando…'; }
-  if (wrap) wrap.innerHTML = '<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen…</span></div>';
+  if (btn)  { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Buscando...'; }
+  if (wrap) wrap.innerHTML = '<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen...</span></div>';
 
   // Historial de URLs ya vistas para este perfume
   const usedUrls = Array.isArray(p.imgHistory) ? [...p.imgHistory] : (p.img ? [p.img] : []);
@@ -1580,7 +1580,7 @@ async function rebuscarImagen(id) {
     toast('Historial completo, volviendo al inicio');
   }
 
-  const newHistory = found ? [...usedUrls, found].slice(-15) : usedUrls; // máx 15 en historial
+  const newHistory = found ? [...usedUrls, found].slice(-15) : usedUrls; // m?x 15 en historial
   const updated = { ...p, img: found || p.img, imgFetched: true, imgIndex: skip % MAX_TRIES, imgHistory: newHistory };
   await fsSet(id, updated);
 
@@ -1593,7 +1593,7 @@ async function rebuscarImagen(id) {
 
   if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/></svg> Buscar otra'; }
 
-  toast(found ? `Nueva imagen encontrada ✓ (${newHistory.length} vistas)` : 'No se encontraron más imágenes');
+  toast(found ? `Nueva imagen encontrada  (${newHistory.length} vistas)` : 'No se encontraron mas imagenes');
 }
 
 async function aplicarUrlImagen(id) {
@@ -1604,7 +1604,7 @@ async function aplicarUrlImagen(id) {
   const wrap=document.getElementById('dImgWrap');
   if(wrap) wrap.innerHTML=`<img src="${url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`;
   document.getElementById('imgUrlPanel').style.display='none';
-  toast('Imagen actualizada ✓');
+  toast('Imagen actualizada ');
 }
 
 /* ══ TOAST ══ */
@@ -1674,12 +1674,12 @@ async function openImgPicker(id) {
   imgPickerPerfumeId = id;
   imgPickerSelected  = null;
 
-  // Actualizar sub-título
-  document.getElementById('imgPickerSub').textContent = `${p.name} — ${p.brand || 'sin marca'}`;
+  // Actualizar sub-t?tulo
+  document.getElementById('imgPickerSub').textContent = `${p.name} - ${p.brand || 'sin marca'}`;
 
-  // Resetear grid y botón
+  // Resetear grid y bot?n
   document.getElementById('imgPickerGrid').innerHTML =
-    '<div class="imgpicker-loading"><div class="spinner"></div><span>Buscando imágenes…</span></div>';
+    '<div class="imgpicker-loading"><div class="spinner"></div><span>Buscando imagenes...</span></div>';
   const confirmBtn = document.getElementById('imgPickerConfirm');
   confirmBtn.disabled = true;
   confirmBtn.textContent = 'Usar esta imagen';
@@ -1687,19 +1687,19 @@ async function openImgPicker(id) {
   // Abrir modal
   document.getElementById('imgPickerModal').classList.add('open');
 
-  // Buscar imágenes
+  // Buscar imagenes
   const urls = await fetchAllImages(p);
 
   if (urls.length === 0) {
     document.getElementById('imgPickerGrid').innerHTML =
-      '<div class="imgpicker-loading"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>No se encontraron imágenes</span></div>';
+      '<div class="imgpicker-loading"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>No se encontraron imagenes</span></div>';
     return;
   }
 
   document.getElementById('imgPickerGrid').innerHTML = urls.map((url, i) => `
     <div class="imgpicker-item" id="imgpi-${i}" onclick="selectImgPicker(${i}, '${url.replace(/'/g,"\'")}')">
       <img src="${url}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'imgpicker-err\'>No disponible</div>'">
-      <div class="imgpicker-check">✓</div>
+      <div class="imgpicker-check"></div>
     </div>
   `).join('');
 }
@@ -1719,7 +1719,7 @@ async function confirmImgPicker() {
   if (!p) return;
 
   const btn = document.getElementById('imgPickerConfirm');
-  btn.disabled = true; btn.textContent = 'Guardando…';
+  btn.disabled = true; btn.textContent = 'Guardando...';
 
   const history = Array.isArray(p.imgHistory) ? p.imgHistory : [];
   await fsSet(imgPickerPerfumeId, {
@@ -1729,14 +1729,14 @@ async function confirmImgPicker() {
     imgHistory: [...history, imgPickerSelected].slice(-20)
   });
 
-  // Actualizar UI del detalle si está abierto
+  // Actualizar UI del detalle si esta abierto
   const wrap = document.getElementById('dImgWrap');
   if (wrap) wrap.innerHTML = `<img src="${imgPickerSelected}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`;
   const inp = document.getElementById('dImgUrl');
   if (inp) inp.value = imgPickerSelected;
 
   closeImgPicker();
-  toast('Imagen actualizada ✓');
+  toast('Imagen actualizada ');
 }
 
 function closeImgPicker() {
@@ -1772,20 +1772,20 @@ function renderExportText() {
 
   const lines = lista.map((p, i) => {
     const partes = [`${i+1}. ${p.name}`];
-    if (p.brand)    partes[0] += ` — ${p.brand}`;
+    if (p.brand)    partes[0] += ` - ${p.brand}`;
     const meta = [];
     if (p.owner)    meta.push(p.owner === 'law' ? 'Law' : 'Mily');
-    if (p.probado)  meta.push('✓ Probado');
-    if (p.rating)   meta.push('★'.repeat(Math.floor(p.rating)) + (p.rating % 1 ? '½' : '') + ` (${p.rating})`);
+    if (p.probado)  meta.push(' Probado');
+    if (p.rating)   meta.push('*'.repeat(Math.floor(p.rating)) + (p.rating % 1 ? '.5' : '') + ` (${p.rating})`);
     if (p.ocasion)  meta.push(p.ocasion);
     if (p.precioMin) meta.push(p.precioMin + (p.precioMinTienda ? ' en ' + p.precioMinTienda : ''));
-    if (meta.length) partes.push('   ' + meta.join(' · '));
+    if (meta.length) partes.push('   ' + meta.join(' - '));
     return partes.join('
 ');
   });
 
-  const header = `Babe Fragrances — ${new Date().toLocaleDateString('es-PA', {day:'2-digit',month:'short',year:'numeric'})}
-${'─'.repeat(40)}
+  const header = `Babe Fragrances - ${new Date().toLocaleDateString('es-PA', {day:'2-digit',month:'short',year:'numeric'})}
+${'-'.repeat(40)}
 `;
   const text = header + lines.join('
 
@@ -1815,7 +1815,7 @@ async function copyExportList() {
   if (!text) return;
   try {
     await navigator.clipboard.writeText(text);
-    toast('Lista copiada ✓');
+    toast('Lista copiada!');
   } catch {
     document.getElementById('exportText')?.select();
     toast('Selecciona el texto y copia manualmente');
@@ -1831,18 +1831,18 @@ function exportToExcel() {
   lista.sort((a,b) => a.name.localeCompare(b.name));
 
   const rows = lista.map((p, i) => ({
-    '#':            i + 1,
-    'Nombre':       p.name,
-    'Marca':        p.brand || '',
-    'Para quien':   p.owner === 'law' ? 'Law' : 'Mily',
-    'Probado':      p.probado ? 'Sí' : 'No',
-    'Calificación': p.rating ? p.rating : '',
-    'Ocasión':      p.ocasion || '',
-    'Precio mín':   p.precioMin || '',
-    'Tienda':       p.precioMinTienda || '',
-    'Tamaño':       p.precioMinTamano || '',
-    'Presentación': p.precioMinPresent || '',
-    'Notas':        p.notas || '',
+    '#':           i + 1,
+    'Nombre':      p.name,
+    'Marca':       p.brand || '',
+    'Para quien':  p.owner === 'law' ? 'Law' : 'Mily',
+    'Probado':     p.probado ? 'Si' : 'No',
+    'Rating':      p.rating ? p.rating : '',
+    'Ocasion':     p.ocasion || '',
+    'Precio min':  p.precioMin || '',
+    'Tienda':      p.precioMinTienda || '',
+    'Tamano':      p.precioMinTamano || '',
+    'Presentacion':p.precioMinPresent || '',
+    'Notas':       p.notas || '',
   }));
 
   const ws = XLSX.utils.json_to_sheet(rows);
@@ -1858,7 +1858,7 @@ function exportToExcel() {
 
   const fecha = new Date().toLocaleDateString('es-PA', {day:'2-digit', month:'2-digit', year:'numeric'}).replace(/\//g,'-');
   XLSX.writeFile(wb, `BabeFragrances_${fecha}.xlsx`);
-  toast('Excel descargado ✓');
+  toast('Excel descargado!');
 }
 
 window.openExportModal  = openExportModal;
@@ -1887,7 +1887,7 @@ function renderTiendasList() {
   const list = document.getElementById('tiendaList');
   if (!list) return;
   if (tiendas.length === 0) {
-    list.innerHTML = `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0">Sin tiendas aún</p>`;
+    list.innerHTML = `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0">Sin tiendas aun</p>`;
     return;
   }
   list.innerHTML = tiendas.map(t => `
@@ -1896,8 +1896,8 @@ function renderTiendasList() {
         <div style="font-size:14px;color:var(--text)">${t.nombre}</div>
         ${t.direccion ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${t.direccion}</div>` : ''}
       </div>
-      <button class="btn btn-outline btn-sm" onclick="openEditTiendaForm('${t.id}')">✏️</button>
-      <button class="btn btn-outline btn-sm" onclick="window._deleteTienda('${t.id}')" style="color:var(--text-muted)">✕</button>
+      <button class="btn btn-outline btn-sm" onclick="openEditTiendaForm('${t.id}')">[editar]</button>
+      <button class="btn btn-outline btn-sm" onclick="window._deleteTienda('${t.id}')" style="color:var(--text-muted)">x</button>
     </div>`).join('');
 }
 
@@ -1918,7 +1918,7 @@ function renderTiendaForm() {
 
 function openAddTiendaForm() {
   tiendaFormMode = 'add';
-  // Limpiar campos explícitamente siempre
+  // Limpiar campos expl?citamente siempre
   const idEl = document.getElementById('tFormId');
   const nEl  = document.getElementById('tNombre');
   const dEl  = document.getElementById('tDireccion');
@@ -1953,12 +1953,12 @@ async function saveTiendaForm() {
 
   const nombre    = nombreEl?.value.trim() || '';
   const direccion = direccionEl?.value.trim() || '';
-  // Solo usar el id si es una edición real (viene de openEditTiendaForm)
+  // Solo usar el id si es una edici?n real (viene de openEditTiendaForm)
   const isEdit    = tiendaFormMode !== null && tiendaFormMode !== 'add';
   const id        = isEdit ? (idEl?.value.trim() || null) : null;
 
   if (!nombre) { toast('El nombre es requerido'); return; }
-  if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
 
   try {
     if (isEdit && id) {
@@ -1984,7 +1984,7 @@ async function saveTiendaForm() {
 
     renderTiendasList();
     syncDot('ok');
-    toast('Tienda guardada ✓');
+    toast('Tienda guardada ');
   } catch(e) {
     console.error('saveTiendaForm error:', e);
     syncDot('err');
@@ -2033,7 +2033,7 @@ function openShowcase(id) {
   // Badge
   const badge = document.getElementById('showcaseBadge');
   badge.className = `showcase-badge ${p.owner}`;
-  badge.innerHTML = p.owner === 'law' ? '🔵 Law' : '🩷 Mily';
+  badge.innerHTML = p.owner === 'law' ? ':law: Law' : ':mily: Mily';
 
   // Nombre con stagger por palabra
   const words = p.name.split(' ');
@@ -2059,18 +2059,18 @@ function openShowcase(id) {
   // Meta chips
   const meta = document.getElementById('showcaseMeta');
   const chips = [];
-  if (p.probado) chips.push('✓ Probado');
+  if (p.probado) chips.push(' Probado');
   if (p.ocasion) chips.push(p.ocasion);
-  if (p.precioMin) chips.push('💰 ' + p.precioMin + (p.precioMinTienda ? ' en ' + p.precioMinTienda : ''));
-  else if (p.price) chips.push(p.price + (p.lugar ? ' · ' + p.lugar : ''));
+  if (p.precioMin) chips.push('$ ' + p.precioMin + (p.precioMinTienda ? ' en ' + p.precioMinTienda : ''));
+  else if (p.price) chips.push(p.price + (p.lugar ? ' - ' + p.lugar : ''));
   meta.innerHTML = chips
     .map((ch, i) => `<span class="showcase-chip" style="transition-delay:${.65 + i * .06 + words.length * .04}s">${ch}</span>`)
     .join('');
 
-  // Botón delay
+  // Bot?n delay
   document.getElementById('showcaseBtn').style.transitionDelay = `${.75 + words.length * .04}s`;
 
-  // Partículas
+  // Part?culas
   spawnParticles(p.owner);
 
   // Abrir
