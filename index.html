@@ -890,9 +890,16 @@ async function loadPrecios(perfumeId) {
     const snap = await getDocs(
       query(collection(db, COL_PRECIOS, perfumeId, 'registros'), orderBy('fecha', 'desc'))
     );
+    // ordenar también por precio (menor primero) para el display
     preciosCache[perfumeId] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     return preciosCache[perfumeId];
   } catch(e) { console.error('Error cargando precios:', e); return []; }
+}
+
+// Extrae número de un string de precio "$58.99" → 58.99
+function parsePrecio(str) {
+  const n = parseFloat((str || '').replace(/[^0-9.]/g, ''));
+  return isNaN(n) ? null : n;
 }
 
 async function savePrecio(perfumeId, data) {
@@ -903,7 +910,27 @@ async function savePrecio(perfumeId, data) {
       fecha: serverTimestamp(),
       fechaStr: new Date().toLocaleDateString('es-PA', { day:'2-digit', month:'short', year:'numeric' })
     });
-    delete preciosCache[perfumeId]; // invalidar cache
+    delete preciosCache[perfumeId];
+
+    // Actualizar precioMin en el documento del perfume si este es más barato
+    const p = perfumes.find(x => x.id === perfumeId);
+    if (p) {
+      const nuevoNum   = parsePrecio(data.precio);
+      const actualNum  = parsePrecio(p.precioMin);
+      const esMasBarato = nuevoNum !== null && (actualNum === null || nuevoNum <= actualNum);
+      if (esMasBarato) {
+        const tienda = tiendas.find(t => t.id === data.tiendaId);
+        await fsSet(perfumeId, {
+          ...p,
+          precioMin:        data.precio,
+          precioMinNum:     nuevoNum,
+          precioMinTienda:  tienda?.nombre || '',
+          precioMinTamano:  data.tamano || '',
+          precioMinPresent: data.presentacion || '',
+        });
+      }
+    }
+
     syncDot('ok');
     toast('Precio registrado ✓');
   } catch(e) { console.error(e); syncDot('err'); toast('Error al registrar precio ⚠️'); }
@@ -914,10 +941,31 @@ async function deletePrecio(perfumeId, precioId) {
   try {
     await deleteDoc(doc(db, COL_PRECIOS, perfumeId, 'registros', precioId));
     delete preciosCache[perfumeId];
+
+    // Recalcular precioMin con los registros restantes
+    const restantes = await loadPrecios(perfumeId);
+    const p = perfumes.find(x => x.id === perfumeId);
+    if (p) {
+      if (restantes.length === 0) {
+        await fsSet(perfumeId, { ...p, precioMin:'', precioMinNum:null, precioMinTienda:'', precioMinTamano:'', precioMinPresent:'' });
+      } else {
+        // Ordenar por precio numérico y tomar el mínimo
+        const sorted = [...restantes].sort((a,b) => (parsePrecio(a.precio)||9999) - (parsePrecio(b.precio)||9999));
+        const min = sorted[0];
+        await fsSet(perfumeId, {
+          ...p,
+          precioMin:        min.precio,
+          precioMinNum:     parsePrecio(min.precio),
+          precioMinTienda:  min.tiendaNombre || '',
+          precioMinTamano:  min.tamano || '',
+          precioMinPresent: min.presentacion || '',
+        });
+      }
+    }
+
     toast('Registro eliminado');
-    // Refrescar panel
-    openDetail(perfumeId);
-  } catch(e) { console.error(e); }
+    renderPreciosPanel(perfumeId);
+  } catch(e) { console.error(e); toast('Error al eliminar ⚠️'); }
 }
 
 /* ══ IMAGEN ══ */
@@ -932,16 +980,39 @@ async function fetchImage(p, skip = 0) {
   } catch { return null; }
 }
 
-// Pedir todas las imágenes disponibles de una vez
+// Pedir todas las imágenes — soporta ?all=1 (script nuevo) o fallback con skips paralelos
 async function fetchAllImages(p) {
   if (!SCRIPT_URL) return [];
   try {
-    const url = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}&all=1`;
-    const r = await fetch(url);
-    if (!r.ok) return [];
-    const d = await r.json();
-    return Array.isArray(d.imageUrls) ? d.imageUrls.filter(Boolean) : (d.imageUrl ? [d.imageUrl] : []);
-  } catch { return []; }
+    // Intentar primero con ?all=1 (script actualizado)
+    const urlAll = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}&all=1`;
+    const r = await fetch(urlAll);
+    if (r.ok) {
+      const d = await r.json();
+      // Si devuelve array con más de 1 → script nuevo
+      if (Array.isArray(d.imageUrls) && d.imageUrls.length > 1) {
+        return d.imageUrls.filter(Boolean);
+      }
+      // Si devuelve imageUrls con 1 o imageUrl → script viejo, usar fallback
+    }
+  } catch {}
+
+  // Fallback: 9 llamadas en paralelo con skip 0-8
+  const base = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}`;
+  const promises = Array.from({length: 9}, (_, i) =>
+    fetch(`${base}&skip=${i}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d?.imageUrl || null)
+      .catch(() => null)
+  );
+  const results = await Promise.all(promises);
+  // Deduplicar y filtrar nulos
+  const seen = new Set();
+  return results.filter(url => {
+    if (!url || seen.has(url)) return false;
+    seen.add(url);
+    return true;
+  });
 }
 
 /* ══ ESTRELLAS ══ */
@@ -1033,7 +1104,12 @@ function renderGrid() {
         <div class="card-brand">${p.brand}</div>
         ${p.rating?`<div class="card-stars">${starsHTML(p.rating,14)}</div>`:''}
         ${p.ocasion?`<div class="card-occasion">${p.ocasion}</div>`:''}
-        ${p.price?`<div class="card-price">${p.price}${p.lugar?' · '+p.lugar:''}</div>`:''}
+        ${p.precioMin
+          ? `<div class="card-price">
+               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:.6;vertical-align:middle;margin-right:3px"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+               ${p.precioMin}${p.precioMinTienda ? ' · ' + p.precioMinTienda : ''}
+             </div>`
+          : p.price ? `<div class="card-price">${p.price}${p.lugar?' · '+p.lugar:''}</div>` : ''}
       </div>
     </div>`).join('');
 
@@ -1180,7 +1256,9 @@ async function renderPreciosPanel(id) {
   const panel = document.getElementById('dPanelPrecios');
   if (!panel) return;
   panel.innerHTML = `<div style="text-align:center;padding:20px"><div class="spinner"></div></div>`;
-  const lista = await loadPrecios(id);
+  let lista = await loadPrecios(id);
+  // Ordenar: el más barato primero, luego los demás por fecha
+  lista = [...lista].sort((a,b) => (parsePrecio(a.precio)||9999) - (parsePrecio(b.precio)||9999));
   const tiendaOpts = tiendas.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
   const noTiendas = tiendas.length === 0;
 
@@ -1236,13 +1314,17 @@ async function renderPreciosPanel(id) {
         : lista.map(r => {
             const tienda = tiendas.find(t => t.id === r.tiendaId);
             const tags = [r.tamano, r.presentacion].filter(Boolean).join(' · ');
+            const isMin = r.precio === lista[0].precio;
             return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
               <div style="flex:1;min-width:0;">
-                <div style="font-size:15px;color:var(--gold);font-weight:500">${r.precio}</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
-                  ${tienda ? tienda.nombre : '—'}${tags ? ' · ' + tags : ''}
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="font-size:15px;color:var(--gold);font-weight:500">${r.precio}</span>
+                  ${isMin ? '<span style="font-size:9px;background:rgba(201,169,110,.15);color:var(--gold);border:1px solid rgba(201,169,110,.3);padding:2px 6px;border-radius:100px;letter-spacing:.04em">MÁS BARATO</span>' : ''}
                 </div>
-                <div style="font-size:10px;color:var(--border);margin-top:2px">${r.fechaStr || ''}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
+                  ${tienda ? tienda.nombre : (r.tiendaNombre || '—')}${tags ? ' · ' + tags : ''}
+                </div>
+                <div style="font-size:10px;color:var(--text-muted);opacity:.5;margin-top:2px">${r.fechaStr || ''}</div>
               </div>
               <button class="btn btn-outline btn-sm" onclick="window._deletePrecio('${id}','${r.id}')" style="flex-shrink:0;padding:4px 8px;font-size:11px;color:var(--text-muted)">✕</button>
             </div>`;
@@ -1653,9 +1735,16 @@ function renderTiendaForm() {
 
 function openAddTiendaForm() {
   tiendaFormMode = 'add';
-  renderTiendaForm();
+  // Limpiar campos explícitamente siempre
+  const idEl = document.getElementById('tFormId');
+  const nEl  = document.getElementById('tNombre');
+  const dEl  = document.getElementById('tDireccion');
+  if (idEl) idEl.value = '';
+  if (nEl)  nEl.value  = '';
+  if (dEl)  dEl.value  = '';
   const panel = document.getElementById('tiendaFormPanel');
   if (panel) panel.style.display = 'flex';
+  setTimeout(() => nEl?.focus(), 50);
 }
 
 function openEditTiendaForm(id) {
@@ -1674,23 +1763,52 @@ function closeTiendaForm() {
 }
 
 async function saveTiendaForm() {
-  const nombre = document.getElementById('tNombre')?.value.trim();
-  if (!nombre) { toast('El nombre es requerido'); return; }
-  const id        = document.getElementById('tFormId')?.value.trim() || null;
-  const direccion = document.getElementById('tDireccion')?.value.trim() || '';
+  const nombreEl   = document.getElementById('tNombre');
+  const direccionEl = document.getElementById('tDireccion');
+  const idEl       = document.getElementById('tFormId');
+  const btn        = document.querySelector('#tiendaFormPanel .btn-gold');
 
-  // Deshabilitar botón mientras guarda
-  const btn = document.querySelector('#tiendaFormPanel .btn-gold');
+  const nombre    = nombreEl?.value.trim() || '';
+  const direccion = direccionEl?.value.trim() || '';
+  // Solo usar el id si es una edición real (viene de openEditTiendaForm)
+  const isEdit    = tiendaFormMode !== null && tiendaFormMode !== 'add';
+  const id        = isEdit ? (idEl?.value.trim() || null) : null;
+
+  if (!nombre) { toast('El nombre es requerido'); return; }
   if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
 
-  await saveTienda(id, { nombre, direccion }); // saveTienda hace loadTiendas internamente
+  try {
+    if (isEdit && id) {
+      await setDoc(doc(db, COL_TIENDAS, id), {
+        nombre, direccion, updatedAt: serverTimestamp()
+      });
+    } else {
+      await addDoc(collection(db, COL_TIENDAS), {
+        nombre, direccion, createdAt: serverTimestamp()
+      });
+    }
+    // Recargar lista local
+    const snap = await getDocs(query(collection(db, COL_TIENDAS), orderBy('nombre')));
+    tiendas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-  // Cerrar form y refrescar lista con datos ya actualizados en `tiendas`
-  tiendaFormMode = null;
-  const panel = document.getElementById('tiendaFormPanel');
-  if (panel) panel.style.display = 'none';
-  renderTiendasList();
-  toast('Tienda guardada ✓');
+    // Limpiar form completamente
+    tiendaFormMode = null;
+    if (idEl)       idEl.value = '';
+    if (nombreEl)   nombreEl.value = '';
+    if (direccionEl) direccionEl.value = '';
+    const panel = document.getElementById('tiendaFormPanel');
+    if (panel) panel.style.display = 'none';
+
+    renderTiendasList();
+    syncDot('ok');
+    toast('Tienda guardada ✓');
+  } catch(e) {
+    console.error('saveTiendaForm error:', e);
+    syncDot('err');
+    toast('Error: ' + (e.message || 'No se pudo guardar'));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
+  }
 }
 
 window._deleteTienda  = deleteTienda;
@@ -1760,8 +1878,8 @@ function openShowcase(id) {
   const chips = [];
   if (p.probado) chips.push('✓ Probado');
   if (p.ocasion) chips.push(p.ocasion);
-  if (p.price)   chips.push(p.price);
-  if (p.lugar)   chips.push(p.lugar);
+  if (p.precioMin) chips.push('💰 ' + p.precioMin + (p.precioMinTienda ? ' en ' + p.precioMinTienda : ''));
+  else if (p.price) chips.push(p.price + (p.lugar ? ' · ' + p.lugar : ''));
   meta.innerHTML = chips
     .map((ch, i) => `<span class="showcase-chip" style="transition-delay:${.65 + i * .06 + words.length * .04}s">${ch}</span>`)
     .join('');
