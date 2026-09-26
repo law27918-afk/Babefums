@@ -553,6 +553,9 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0M1 12h2M21 12h2M12 1v2M12 21v2"/></svg>
       Tiendas
     </button>
+    <button class="btn btn-outline" id="btnExportOpen" title="Exportar lista" onclick="openExportModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
     <button class="btn btn-outline" id="btnAddOpen">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Agregar
@@ -628,6 +631,44 @@
     <div class="imgpicker-footer">
       <button class="btn btn-outline" style="flex:1" onclick="closeImgPicker()">Cancelar</button>
       <button class="btn btn-gold" style="flex:1" id="imgPickerConfirm" disabled onclick="confirmImgPicker()">Usar esta imagen</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EXPORTAR -->
+<div class="modal-backdrop" id="exportModal" style="z-index:400">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">Lista de perfumes</span>
+      <button class="modal-close" onclick="closeExportModal()">✕</button>
+    </div>
+    <div class="modal-body" style="gap:12px">
+      <!-- Filtros rápidos -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="filter-chip active-chip" data-efilter="all"   onclick="setExportFilter('all')">Todos</button>
+        <button class="filter-chip"             data-efilter="law"   onclick="setExportFilter('law')">Law</button>
+        <button class="filter-chip"             data-efilter="mily"  onclick="setExportFilter('mily')">Mily</button>
+        <button class="filter-chip"             data-efilter="probado"   onclick="setExportFilter('probado')">Probados</button>
+        <button class="filter-chip"             data-efilter="noprobado" onclick="setExportFilter('noprobado')">Sin probar</button>
+      </div>
+      <!-- Texto exportado -->
+      <textarea id="exportText" rows="16" readonly
+        style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+               padding:12px;color:var(--text);font-size:12px;font-family:inherit;
+               resize:none;width:100%;line-height:1.7;outline:none"></textarea>
+      <!-- Contador -->
+      <div id="exportCount" style="font-size:11px;color:var(--text-muted);text-align:right"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeExportModal()">Cerrar</button>
+      <button class="btn btn-outline" onclick="copyExportList()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar
+      </button>
+      <button class="btn btn-gold" onclick="exportToExcel()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Exportar Excel
+      </button>
     </div>
   </div>
 </div>
@@ -754,6 +795,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- FIREBASE -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, addDoc,
@@ -1257,22 +1299,65 @@ async function renderPreciosPanel(id) {
   if (!panel) return;
   panel.innerHTML = `<div style="text-align:center;padding:20px"><div class="spinner"></div></div>`;
   let lista = await loadPrecios(id);
-  // Ordenar: el más barato primero, luego los demás por fecha
   lista = [...lista].sort((a,b) => (parsePrecio(a.precio)||9999) - (parsePrecio(b.precio)||9999));
+  const p = perfumes.find(x => x.id === id);
   const tiendaOpts = tiendas.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
   const noTiendas = tiendas.length === 0;
+  const min = lista[0] || null;
 
   panel.innerHTML = `
-    <!-- Registrar nuevo precio -->
-    <div style="background:var(--surface2);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
-      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-weight:500;">Registrar precio</div>
-      ${noTiendas ? `<div style="text-align:center;padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:10px">
-          <p style="font-size:13px;color:var(--text-muted);">Sin tiendas registradas aún</p>
-          <button class="btn btn-outline btn-sm" onclick="openTiendasModal()">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0"/></svg>
-            Ir a Tiendas
-          </button>
-        </div>` : `
+    <!-- Precio mínimo destacado -->
+    ${min ? `
+    <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;">
+      <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mejor precio encontrado</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+        <span style="font-size:26px;font-weight:400;color:var(--gold);font-family:'Cormorant Garamond',serif;letter-spacing:-.02em">${min.precio}</span>
+        ${min.tamano || min.presentacion ? `<span style="font-size:12px;color:var(--text-muted)">${[min.tamano, min.presentacion].filter(Boolean).join(' · ')}</span>` : ''}
+      </div>
+      <div style="font-size:12px;color:var(--text-muted)">${tiendas.find(t=>t.id===min.tiendaId)?.nombre || min.tiendaNombre || '—'} · ${min.fechaStr || ''}</div>
+    </div>` : `
+    <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;text-align:center">
+      <div style="font-size:13px;color:var(--text-muted)">Sin precios registrados aún</div>
+    </div>`}
+
+    <!-- Historial -->
+    ${lista.length > 0 ? `
+    <div>
+      <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Historial (${lista.length})</div>
+      ${lista.map((r, idx) => {
+          const tienda = tiendas.find(t => t.id === r.tiendaId);
+          const tags = [r.tamano, r.presentacion].filter(Boolean).join(' · ');
+          const isMin = idx === 0;
+          return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);">
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-size:15px;color:${isMin?'var(--gold)':'var(--text)'};font-weight:500">${r.precio}</span>
+                ${isMin ? '<span style="font-size:9px;background:rgba(201,169,110,.12);color:var(--gold);border:0.5px solid rgba(201,169,110,.3);padding:2px 6px;border-radius:100px;letter-spacing:.04em">más barato</span>' : ''}
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
+                ${tienda?.nombre || r.tiendaNombre || '—'}${tags ? ' · ' + tags : ''}
+              </div>
+              <div style="font-size:10px;color:var(--text-muted);opacity:.5;margin-top:1px">${r.fechaStr || ''}</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="window._deletePrecio('${id}','${r.id}')" style="flex-shrink:0;padding:4px 8px;font-size:11px;color:var(--text-muted)">✕</button>
+          </div>`;
+        }).join('')}
+    </div>` : ''}
+
+    <!-- Botón registrar precio (colapsa/expande form) -->
+    <div>
+      <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="togglePrecioForm('${id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Registrar precio
+      </button>
+    </div>
+
+    <!-- Form colapsado -->
+    <div id="precioFormPanel" style="display:none;flex-direction:column;gap:12px;background:var(--surface2);border-radius:12px;padding:14px;">
+      ${noTiendas ? `
+        <p style="font-size:13px;color:var(--text-muted);text-align:center">Sin tiendas aún —
+          <button class="btn-link" onclick="openTiendasModal()" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:13px;padding:0">agregar tienda</button>
+        </p>` : `
       <div class="field-row">
         <div class="field"><label>Precio *</label><input type="text" id="pPrecio" placeholder="Ej: $58.99"></div>
         <div class="field">
@@ -1300,41 +1385,22 @@ async function renderPreciosPanel(id) {
       </div>
       <button class="btn btn-gold" style="width:100%" onclick="window._registrarPrecio('${id}')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Guardar registro
+        Guardar
       </button>`}
     </div>
-
-    <!-- Historial -->
-    <div>
-      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">
-        Historial (${lista.length})
-      </div>
-      ${lista.length === 0
-        ? `<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:20px 0">Sin registros aún</p>`
-        : lista.map(r => {
-            const tienda = tiendas.find(t => t.id === r.tiendaId);
-            const tags = [r.tamano, r.presentacion].filter(Boolean).join(' · ');
-            const isMin = r.precio === lista[0].precio;
-            return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
-              <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:6px">
-                  <span style="font-size:15px;color:var(--gold);font-weight:500">${r.precio}</span>
-                  ${isMin ? '<span style="font-size:9px;background:rgba(201,169,110,.15);color:var(--gold);border:1px solid rgba(201,169,110,.3);padding:2px 6px;border-radius:100px;letter-spacing:.04em">MÁS BARATO</span>' : ''}
-                </div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
-                  ${tienda ? tienda.nombre : (r.tiendaNombre || '—')}${tags ? ' · ' + tags : ''}
-                </div>
-                <div style="font-size:10px;color:var(--text-muted);opacity:.5;margin-top:2px">${r.fechaStr || ''}</div>
-              </div>
-              <button class="btn btn-outline btn-sm" onclick="window._deletePrecio('${id}','${r.id}')" style="flex-shrink:0;padding:4px 8px;font-size:11px;color:var(--text-muted)">✕</button>
-            </div>`;
-          }).join('')
-      }
-    </div>
-
-
   `;
 }
+
+function togglePrecioForm(id) {
+  const form = document.getElementById('precioFormPanel');
+  if (!form) return;
+  const open = form.style.display !== 'none';
+  form.style.display = open ? 'none' : 'flex';
+  if (!open) {
+    setTimeout(() => document.getElementById('pPrecio')?.focus(), 50);
+  }
+}
+window.togglePrecioForm = togglePrecioForm;
 
 async function registrarPrecio(id) {
   const precio  = document.getElementById('pPrecio')?.value.trim();
@@ -1593,7 +1659,7 @@ document.getElementById('sortSelect').onchange = e=>{ sortKey=e.target.value; re
 document.getElementById('searchInput').oninput  = e=>{ searchQ=e.target.value; render(); };
 document.getElementById('addModal').onclick    = e=>{ if(e.target===e.currentTarget) closeAddModal(); };
 document.getElementById('detailModal').onclick = e=>{ if(e.target===e.currentTarget) closeDetailModal(); };
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal(); closeDetailModal(); closeShowcase(); closeTiendasModal(); closeImgPicker(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal(); closeDetailModal(); closeShowcase(); closeTiendasModal(); closeImgPicker(); closeExportModal(); } });
 
 
 
@@ -1683,6 +1749,123 @@ window.closeImgPicker   = closeImgPicker;
 window.confirmImgPicker = confirmImgPicker;
 window.selectImgPicker  = selectImgPicker;
 window.openImgPicker    = openImgPicker;
+
+
+/* ══ EXPORTAR ══ */
+let exportFilter = 'all';
+
+function setExportFilter(f) {
+  exportFilter = f;
+  document.querySelectorAll('[data-efilter]').forEach(b =>
+    b.classList.toggle('active-chip', b.dataset.efilter === f)
+  );
+  renderExportText();
+}
+
+function renderExportText() {
+  let lista = [...perfumes];
+  if (exportFilter === 'law')       lista = lista.filter(p => p.owner === 'law');
+  if (exportFilter === 'mily')      lista = lista.filter(p => p.owner === 'mily');
+  if (exportFilter === 'probado')   lista = lista.filter(p => p.probado);
+  if (exportFilter === 'noprobado') lista = lista.filter(p => !p.probado);
+  lista.sort((a,b) => a.name.localeCompare(b.name));
+
+  const lines = lista.map((p, i) => {
+    const partes = [`${i+1}. ${p.name}`];
+    if (p.brand)    partes[0] += ` — ${p.brand}`;
+    const meta = [];
+    if (p.owner)    meta.push(p.owner === 'law' ? 'Law' : 'Mily');
+    if (p.probado)  meta.push('✓ Probado');
+    if (p.rating)   meta.push('★'.repeat(Math.floor(p.rating)) + (p.rating % 1 ? '½' : '') + ` (${p.rating})`);
+    if (p.ocasion)  meta.push(p.ocasion);
+    if (p.precioMin) meta.push(p.precioMin + (p.precioMinTienda ? ' en ' + p.precioMinTienda : ''));
+    if (meta.length) partes.push('   ' + meta.join(' · '));
+    return partes.join('
+');
+  });
+
+  const header = `Babe Fragrances — ${new Date().toLocaleDateString('es-PA', {day:'2-digit',month:'short',year:'numeric'})}
+${'─'.repeat(40)}
+`;
+  const text = header + lines.join('
+
+');
+
+  const ta = document.getElementById('exportText');
+  const ct = document.getElementById('exportCount');
+  if (ta) ta.value = text;
+  if (ct) ct.textContent = `${lista.length} perfume${lista.length !== 1 ? 's' : ''}`;
+}
+
+function openExportModal() {
+  exportFilter = 'all';
+  document.querySelectorAll('[data-efilter]').forEach(b =>
+    b.classList.toggle('active-chip', b.dataset.efilter === 'all')
+  );
+  renderExportText();
+  document.getElementById('exportModal').classList.add('open');
+}
+
+function closeExportModal() {
+  document.getElementById('exportModal').classList.remove('open');
+}
+
+async function copyExportList() {
+  const text = document.getElementById('exportText')?.value;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Lista copiada ✓');
+  } catch {
+    document.getElementById('exportText')?.select();
+    toast('Selecciona el texto y copia manualmente');
+  }
+}
+
+function exportToExcel() {
+  let lista = [...perfumes];
+  if (exportFilter === 'law')       lista = lista.filter(p => p.owner === 'law');
+  if (exportFilter === 'mily')      lista = lista.filter(p => p.owner === 'mily');
+  if (exportFilter === 'probado')   lista = lista.filter(p => p.probado);
+  if (exportFilter === 'noprobado') lista = lista.filter(p => !p.probado);
+  lista.sort((a,b) => a.name.localeCompare(b.name));
+
+  const rows = lista.map((p, i) => ({
+    '#':            i + 1,
+    'Nombre':       p.name,
+    'Marca':        p.brand || '',
+    'Para quien':   p.owner === 'law' ? 'Law' : 'Mily',
+    'Probado':      p.probado ? 'Sí' : 'No',
+    'Calificación': p.rating ? p.rating : '',
+    'Ocasión':      p.ocasion || '',
+    'Precio mín':   p.precioMin || '',
+    'Tienda':       p.precioMinTienda || '',
+    'Tamaño':       p.precioMinTamano || '',
+    'Presentación': p.precioMinPresent || '',
+    'Notas':        p.notas || '',
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Ancho de columnas
+  ws['!cols'] = [
+    {wch:4}, {wch:32}, {wch:20}, {wch:10}, {wch:8},
+    {wch:12}, {wch:14}, {wch:10}, {wch:16}, {wch:10}, {wch:14}, {wch:30}
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Perfumes');
+
+  const fecha = new Date().toLocaleDateString('es-PA', {day:'2-digit', month:'2-digit', year:'numeric'}).replace(/\//g,'-');
+  XLSX.writeFile(wb, `BabeFragrances_${fecha}.xlsx`);
+  toast('Excel descargado ✓');
+}
+
+window.openExportModal  = openExportModal;
+window.closeExportModal = closeExportModal;
+window.copyExportList   = copyExportList;
+window.exportToExcel    = exportToExcel;
+window.setExportFilter  = setExportFilter;
 
 /* ══ TIENDAS MODAL ══ */
 // Estado del form de tiendas (separado del render de la lista)
