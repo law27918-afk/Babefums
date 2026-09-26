@@ -1780,17 +1780,13 @@ function renderExportText() {
     if (p.ocasion)  meta.push(p.ocasion);
     if (p.precioMin) meta.push(p.precioMin + (p.precioMinTienda ? ' en ' + p.precioMinTienda : ''));
     if (meta.length) partes.push('   ' + meta.join(' - '));
-    return partes.join('
-');
+    return partes.join('\n');
   });
 
-  const header = `Babe Fragrances - ${new Date().toLocaleDateString('es-PA', {day:'2-digit',month:'short',year:'numeric'})}
-${'-'.repeat(40)}
-`;
-  const text = header + lines.join('
-
-');
-
+  var fecha = new Date().toLocaleDateString('es-PA', {day:'2-digit',month:'short',year:'numeric'});
+  var sep = '----------------------------------------';
+  var header = 'Babe Fragrances - ' + fecha + '\n' + sep + '\n';
+  var text = header + lines.join('\n\n');
   const ta = document.getElementById('exportText');
   const ct = document.getElementById('exportCount');
   if (ta) ta.value = text;
