@@ -37,9 +37,9 @@
     height: calc(64px + env(safe-area-inset-top, 0px)); gap: 16px;
   }
   header.scrolled { border-bottom-color: var(--border); }
-  .logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; letter-spacing: .12em; color: var(--gold); white-space: nowrap; }
-  .logo span { font-style: italic; color: var(--text-muted); font-size: 14px; letter-spacing: .05em; margin-left: 8px; }
-  .header-right { display: flex; align-items: center; gap: 10px; }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; letter-spacing: .08em; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
+  .logo span { font-style: italic; color: var(--text-muted); font-size: 13px; letter-spacing: .05em; margin-left: 6px; }
+  .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .search-wrap { position: relative; }
   .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
   input[type="search"] { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px 8px 34px; color: var(--text); font-size: 13px; width: 220px; outline: none; transition: border-color var(--transition); }
@@ -87,7 +87,7 @@
   select option { background: var(--surface2); color: var(--text); }
 
   /* STATS */
-  .stats-bar { display: flex; gap: 24px; padding: 16px clamp(16px,4vw,48px); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .stats-bar { display: flex; gap: 20px; padding: 14px clamp(16px,4vw,48px); border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
   .stat { display: flex; align-items: baseline; gap: 6px; }
   .stat-n { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: var(--gold); line-height: 1; }
   .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
@@ -199,7 +199,7 @@
   .add-tab.active { background: var(--gold); color: #0c0c0e; font-weight: 500; }
 
   /* DETAIL */
-  .detail-img-wrap { width: 100%; aspect-ratio: 4/3; background: var(--surface2); overflow: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .detail-img-wrap { width: 100%; aspect-ratio: 4/3; background: var(--surface2); overflow: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; max-width: 100%; }
   .detail-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
   .detail-img-searching { display: flex; flex-direction: column; gap: 10px; align-items: center; color: var(--text-muted); font-size: 12px; }
   .detail-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; line-height: 1.2; letter-spacing: -0.02em; }
@@ -253,13 +253,14 @@
 
   .showcase-card {
     position: relative; z-index: 1;
-    width: min(420px, 92vw);
+    width: min(420px, 94vw);
     aspect-ratio: 4/5;
-    border-radius: 28px;
+    border-radius: 24px;
     overflow: hidden;
     transform: scale(.88);
     transition: transform .5s cubic-bezier(0.32, 0.72, 0, 1);
     box-shadow: 0 32px 80px rgba(0,0,0,.7);
+    margin: 0 auto;
   }
   .showcase-backdrop.open .showcase-card { transform: scale(1); }
 
@@ -515,19 +516,32 @@
 
   @media (max-width:600px) {
     .logo span { display: none; }
-    input[type="search"] { width: 140px; }
-    .stats-bar { gap: 16px; }
-    .grid { grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 12px; }
+    input[type="search"] { width: 110px; font-size: 12px; }
+    .stats-bar { gap: 12px; flex-wrap: wrap; padding: 12px clamp(12px,4vw,48px); }
+    .stat-n { font-size: 22px; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 16px clamp(12px,4vw,48px) 48px; }
     .detail-grid { grid-template-columns: 1fr; }
     .field-row { grid-template-columns: 1fr; }
+    /* Ocultar texto en botones del header para que quepan */
+    #btnTiendasOpen .btn-label,
+    #btnExportOpen .btn-label { display: none; }
+    #btnTiendasOpen,
+    #btnExportOpen { padding: 8px; }
     /* Apple 44pt minimum hit targets */
-    .filter-chip { padding: 10px 16px; }
-    .btn-sm { padding: 10px 14px; }
-    .tab { padding: 10px 20px; }
-    .hs-star { width: 36px; height: 36px; }
-    .hs-star svg { width: 36px; height: 36px; }
+    .filter-chip { padding: 9px 14px; font-size: 11px; }
+    .btn-sm { padding: 9px 12px; }
+    .tab { padding: 9px 16px; font-size: 12px; }
+    .hs-star { width: 34px; height: 34px; }
+    .hs-star svg { width: 34px; height: 34px; }
     /* Safe area bottom padding */
     .grid { padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px)); }
+    /* Modal full width en mobile */
+    .imgpicker-grid { grid-template-columns: repeat(2, 1fr); }
+    /* Showcase mas pequeño */
+    .showcase-card { width: 96vw; }
+    /* Tabs row scroll horizontal */
+    .tabs-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+    .tabs-row::-webkit-scrollbar { display: none; }
   }
 </style>
 </head>
@@ -551,7 +565,7 @@
     </div>
     <button class="btn btn-outline" id="btnTiendasOpen" title="Gestionar tiendas" onclick="openTiendasModal()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0M1 12h2M21 12h2M12 1v2M12 21v2"/></svg>
-      Tiendas
+      <span class="btn-label">Tiendas</span>
     </button>
     <button class="btn btn-outline" id="btnExportOpen" title="Exportar lista" onclick="openExportModal()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -798,7 +812,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore, collection, doc, setDoc, addDoc,
+import { getFirestore, collection, doc, setDoc, addDoc, updateDoc,
          deleteDoc, onSnapshot, getDocs, query, orderBy,
          serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
@@ -819,6 +833,13 @@ const db  = getFirestore(app);
 const COL       = 'perfumes';
 const COL_TIENDAS = 'tiendas';
 const COL_PRECIOS = 'precios'; // precios/{perfumeId}/registros
+
+/* ══ ESCAPE HTML (evita XSS al insertar datos del usuario en innerHTML) ══ */
+function esc(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
 
 /* ══ DATOS INICIALES (seed solo si Firestore esta vacio) ══ */
 const INITIAL = [
@@ -954,28 +975,37 @@ async function savePrecio(perfumeId, data) {
     });
     delete preciosCache[perfumeId];
 
-    // Actualizar precioMin en el documento del perfume si este es mas barato
-    const p = perfumes.find(x => x.id === perfumeId);
-    if (p) {
-      const nuevoNum   = parsePrecio(data.precio);
-      const actualNum  = parsePrecio(p.precioMin);
-      const esMasBarato = nuevoNum !== null && (actualNum === null || nuevoNum <= actualNum);
-      if (esMasBarato) {
-        const tienda = tiendas.find(t => t.id === data.tiendaId);
-        await fsSet(perfumeId, {
-          ...p,
-          precioMin:        data.precio,
-          precioMinNum:     nuevoNum,
-          precioMinTienda:  tienda?.nombre || '',
-          precioMinTamano:  data.tamano || '',
-          precioMinPresent: data.presentacion || '',
-        });
-      }
-    }
+    // Recalcular precioMin siempre desde todos los registros
+    await recalcularPrecioMin(perfumeId);
 
     syncDot('ok');
     toast('Precio registrado ');
   } catch(e) { console.error(e); syncDot('err'); toast('Error al registrar precio!'); }
+}
+
+async function recalcularPrecioMin(perfumeId) {
+  const registros = await loadPrecios(perfumeId);
+  syncDot('syncing');
+  try {
+    if (registros.length === 0) {
+      await updateDoc(doc(db, COL, perfumeId), {
+        precioMin: '', precioMinNum: null, precioMinTienda: '',
+        precioMinTamano: '', precioMinPresent: ''
+      });
+    } else {
+      const sorted = [...registros].sort((a,b) => (parsePrecio(a.precio)||9999) - (parsePrecio(b.precio)||9999));
+      const min = sorted[0];
+      const tiendaNombre = tiendas.find(t => t.id === min.tiendaId)?.nombre || min.tiendaNombre || '';
+      await updateDoc(doc(db, COL, perfumeId), {
+        precioMin:        min.precio,
+        precioMinNum:     parsePrecio(min.precio),
+        precioMinTienda:  tiendaNombre,
+        precioMinTamano:  min.tamano || '',
+        precioMinPresent: min.presentacion || '',
+      });
+    }
+    syncDot('ok');
+  } catch(e) { console.error('recalcularPrecioMin:', e); syncDot('err'); }
 }
 
 async function deletePrecio(perfumeId, precioId) {
@@ -1128,7 +1158,7 @@ function renderStats() {
 }
 
 function cardImgHTML(p) {
-  if (p.img) return `<img class="card-img" src="${p.img}" alt="${p.name}" loading="lazy">`;
+  if (p.img) return `<img class="card-img" src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy">`;
   if (p.imgFetched) return `<div class="card-img-placeholder"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Sin imagen</span></div>`;
   return `<div class="card-img-loading"><div class="spinner"></div></div>`;
 }
@@ -1138,20 +1168,20 @@ function renderGrid() {
   if (!list.length) { grid.innerHTML=`<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><p>Sin resultados</p></div>`; return; }
   grid.innerHTML = list.map(p=>`
     <div class="card" data-id="${p.id}" onclick="window._openShowcase('${p.id}')">
-      <span class="card-badge badge-${p.owner}">${p.owner==='law'?'Law':'Mily'}</span>
+      <span class="card-badge badge-${p.owner}">${p.owner==='law'?'&#x1F535; Law':'&#x1FA77; Mily'}</span>
       ${p.probado?'<span class="badge-probado">Probado</span>':''}
       ${cardImgHTML(p)}
       <div class="card-body">
-        <div class="card-name">${p.name}</div>
-        <div class="card-brand">${p.brand}</div>
+        <div class="card-name">${esc(p.name)}</div>
+        <div class="card-brand">${esc(p.brand)}</div>
         ${p.rating?`<div class="card-stars">${starsHTML(p.rating,14)}</div>`:''}
-        ${p.ocasion?`<div class="card-occasion">${p.ocasion}</div>`:''}
+        ${p.ocasion?`<div class="card-occasion">${esc(p.ocasion)}</div>`:''}
         ${p.precioMin
           ? `<div class="card-price">
                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:.6;vertical-align:middle;margin-right:3px"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-               ${p.precioMin}${p.precioMinTienda ? ' - ' + p.precioMinTienda : ''}
+               ${esc(p.precioMin)}${p.precioMinTienda ? ' - ' + esc(p.precioMinTienda) : ''}
              </div>`
-          : p.price ? `<div class="card-price">${p.price}${p.lugar?' - '+p.lugar:''}</div>` : ''}
+          : p.price ? `<div class="card-price">${esc(p.price)}${p.lugar?' - '+esc(p.lugar):''}</div>` : ''}
       </div>
     </div>`).join('');
 
@@ -1301,7 +1331,7 @@ async function renderPreciosPanel(id) {
   let lista = await loadPrecios(id);
   lista = [...lista].sort((a,b) => (parsePrecio(a.precio)||9999) - (parsePrecio(b.precio)||9999));
   const p = perfumes.find(x => x.id === id);
-  const tiendaOpts = tiendas.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+  const tiendaOpts = tiendas.map(t => `<option value="${t.id}">${esc(t.nombre)}</option>`).join('');
   const noTiendas = tiendas.length === 0;
   const min = lista[0] || null;
 
@@ -1311,10 +1341,10 @@ async function renderPreciosPanel(id) {
     <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;">
       <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Mejor precio encontrado</div>
       <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
-        <span style="font-size:26px;font-weight:400;color:var(--gold);font-family:'Cormorant Garamond',serif;letter-spacing:-.02em">${min.precio}</span>
-        ${min.tamano || min.presentacion ? `<span style="font-size:12px;color:var(--text-muted)">${[min.tamano, min.presentacion].filter(Boolean).join(' - ')}</span>` : ''}
+        <span style="font-size:26px;font-weight:400;color:var(--gold);font-family:'Cormorant Garamond',serif;letter-spacing:-.02em">${esc(min.precio)}</span>
+        ${min.tamano || min.presentacion ? `<span style="font-size:12px;color:var(--text-muted)">${esc([min.tamano, min.presentacion].filter(Boolean).join(' - '))}</span>` : ''}
       </div>
-      <div style="font-size:12px;color:var(--text-muted)">${tiendas.find(t=>t.id===min.tiendaId)?.nombre || min.tiendaNombre || '-'} - ${min.fechaStr || ''}</div>
+      <div style="font-size:12px;color:var(--text-muted)">${esc(tiendas.find(t=>t.id===min.tiendaId)?.nombre || min.tiendaNombre || '-')} - ${esc(min.fechaStr || '')}</div>
     </div>` : `
     <div style="background:var(--surface2);border-radius:12px;padding:14px 16px;text-align:center">
       <div style="font-size:13px;color:var(--text-muted)">Sin precios registrados aun</div>
@@ -1331,13 +1361,13 @@ async function renderPreciosPanel(id) {
           return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);">
             <div style="flex:1;min-width:0;">
               <div style="display:flex;align-items:center;gap:6px">
-                <span style="font-size:15px;color:${isMin?'var(--gold)':'var(--text)'};font-weight:500">${r.precio}</span>
+                <span style="font-size:15px;color:${isMin?'var(--gold)':'var(--text)'};font-weight:500">${esc(r.precio)}</span>
                 ${isMin ? '<span style="font-size:9px;background:rgba(201,169,110,.12);color:var(--gold);border:0.5px solid rgba(201,169,110,.3);padding:2px 6px;border-radius:100px;letter-spacing:.04em">mas barato</span>' : ''}
               </div>
               <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
-                ${tienda?.nombre || r.tiendaNombre || '-'}${tags ? ' - ' + tags : ''}
+                ${esc(tienda?.nombre || r.tiendaNombre || '-')}${tags ? ' - ' + esc(tags) : ''}
               </div>
-              <div style="font-size:10px;color:var(--text-muted);opacity:.5;margin-top:1px">${r.fechaStr || ''}</div>
+              <div style="font-size:10px;color:var(--text-muted);opacity:.5;margin-top:1px">${esc(r.fechaStr || '')}</div>
             </div>
             <button class="btn btn-outline btn-sm" onclick="window._deletePrecio('${id}','${r.id}')" style="flex-shrink:0;padding:4px 8px;font-size:11px;color:var(--text-muted)">x</button>
           </div>`;
@@ -1345,10 +1375,13 @@ async function renderPreciosPanel(id) {
     </div>` : ''}
 
     <!-- Boton registrar precio (colapsa/expande form) -->
-    <div>
-      <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="togglePrecioForm('${id}')">
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="togglePrecioForm('${id}')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Registrar precio
+      </button>
+      <button class="btn btn-outline btn-sm" title="Recalcular precio minimo" onclick="window._recalcMin('${id}')" style="padding:8px 10px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/></svg>
       </button>
     </div>
 
@@ -1418,7 +1451,7 @@ function openDetail(id) {
   const p=perfumes.find(x=>x.id===id); if(!p) return;
   detailId=id; editRating=p.rating; editProbado=p.probado; detailTab='info';
   document.getElementById('dTitle').textContent=p.name;
-  const opts=OCASIONES.map(o=>`<option value="${o}" ${p.ocasion===o?'selected':''}>${o||'- Sin definir -'}</option>`).join('');
+  const opts=OCASIONES.map(o=>`<option value="${esc(o)}" ${p.ocasion===o?'selected':''}>${esc(o||'- Sin definir -')}</option>`).join('');
 
   document.getElementById('detailBody').innerHTML=`
     <!-- Tabs -->
@@ -1430,7 +1463,7 @@ function openDetail(id) {
     <!-- Panel INFO -->
     <div id="dPanelInfo" style="display:flex;flex-direction:column;gap:16px;">
       <div class="detail-img-wrap" id="dImgWrap">
-        ${p.img?`<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`:p.imgFetched?`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`:`<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen...</span></div>`}
+        ${p.img?`<img src="${esc(p.img)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`:p.imgFetched?`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`:`<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen...</span></div>`}
       </div>
       <div class="img-controls">
         <button class="btn btn-outline btn-sm" id="btnRebuscar" onclick="openImgPicker('${id}')">
@@ -1444,7 +1477,7 @@ function openDetail(id) {
         <div class="field">
           <label>URL de imagen</label>
           <div style="display:flex;gap:8px;">
-            <input type="url" id="dImgUrl" placeholder="https://?" value="${p.img||''}" style="flex:1">
+            <input type="url" id="dImgUrl" placeholder="https://?" value="${esc(p.img||'')}" style="flex:1">
             <button class="btn btn-gold btn-sm" onclick="window._aplicarUrlImagen('${id}')">Aplicar</button>
           </div>
         </div>
@@ -1452,16 +1485,16 @@ function openDetail(id) {
 
       <!-- Edicion de nombre y marca -->
       <div class="field-row">
-        <div class="field"><label>Nombre</label><input type="text" id="dEditName" value="${p.name}"></div>
-        <div class="field"><label>Marca</label><input type="text" id="dEditBrand" value="${p.brand}"></div>
+        <div class="field"><label>Nombre</label><input type="text" id="dEditName" value="${esc(p.name)}"></div>
+        <div class="field"><label>Marca</label><input type="text" id="dEditBrand" value="${esc(p.brand)}"></div>
       </div>
 
       <!-- Owner -->
       <div class="field">
         <label>Para quien</label>
         <div class="owner-toggle">
-          <button class="owner-btn${p.owner==='law'?' sel-law':''}" id="dOwnerLaw" onclick="setDetailOwner('law')">:law: Law</button>
-          <button class="owner-btn${p.owner==='mily'?' sel-mily':''}" id="dOwnerMily" onclick="setDetailOwner('mily')">:mily: Mily</button>
+          <button class="owner-btn${p.owner==='law'?' sel-law':''}" id="dOwnerLaw" onclick="setDetailOwner('law')">&#x1F535; Law</button>
+          <button class="owner-btn${p.owner==='mily'?' sel-mily':''}" id="dOwnerMily" onclick="setDetailOwner('mily')">&#x1FA77; Mily</button>
         </div>
       </div>
 
@@ -1479,7 +1512,7 @@ function openDetail(id) {
       </div>
 
       <div class="field"><label>Ocasion</label><select id="dOcasion">${opts}</select></div>
-      <div class="field"><label>Notas</label><textarea id="dNotas" rows="3">${p.notas||''}</textarea></div>
+      <div class="field"><label>Notas</label><textarea id="dNotas" rows="3">${esc(p.notas||'')}</textarea></div>
     </div>
 
     <!-- Panel PRECIOS -->
@@ -1505,7 +1538,7 @@ function openDetail(id) {
       fsSet(p.id, updated);
       const wrap=document.getElementById('dImgWrap');
       if (wrap) wrap.innerHTML = url
-        ? `<img src="${url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`
+        ? `<img src="${esc(url)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`
         : `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
     });
   }
@@ -1580,12 +1613,12 @@ async function rebuscarImagen(id) {
     toast('Historial completo, volviendo al inicio');
   }
 
-  const newHistory = found ? [...usedUrls, found].slice(-15) : usedUrls; // m?x 15 en historial
+  const newHistory = found ? [...usedUrls, found].slice(-15) : usedUrls; // max 15 en historial
   const updated = { ...p, img: found || p.img, imgFetched: true, imgIndex: skip % MAX_TRIES, imgHistory: newHistory };
   await fsSet(id, updated);
 
   if (wrap) wrap.innerHTML = found
-    ? `<img src="${found}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`
+    ? `<img src="${esc(found)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`
     : `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
 
   const inp = document.getElementById('dImgUrl');
@@ -1602,7 +1635,7 @@ async function aplicarUrlImagen(id) {
   const p=perfumes.find(x=>x.id===id); if(!p) return;
   await fsSet(id,{ ...p, img:url, imgFetched:true });
   const wrap=document.getElementById('dImgWrap');
-  if(wrap) wrap.innerHTML=`<img src="${url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`;
+  if(wrap) wrap.innerHTML=`<img src="${esc(url)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`;
   document.getElementById('imgUrlPanel').style.display='none';
   toast('Imagen actualizada ');
 }
@@ -1674,10 +1707,10 @@ async function openImgPicker(id) {
   imgPickerPerfumeId = id;
   imgPickerSelected  = null;
 
-  // Actualizar sub-t?tulo
+  // Actualizar sub-titulo
   document.getElementById('imgPickerSub').textContent = `${p.name} - ${p.brand || 'sin marca'}`;
 
-  // Resetear grid y bot?n
+  // Resetear grid y boton
   document.getElementById('imgPickerGrid').innerHTML =
     '<div class="imgpicker-loading"><div class="spinner"></div><span>Buscando imagenes...</span></div>';
   const confirmBtn = document.getElementById('imgPickerConfirm');
@@ -1696,12 +1729,23 @@ async function openImgPicker(id) {
     return;
   }
 
-  document.getElementById('imgPickerGrid').innerHTML = urls.map((url, i) => `
-    <div class="imgpicker-item" id="imgpi-${i}" onclick="selectImgPicker(${i}, '${url.replace(/'/g,"\'")}')">
-      <img src="${url}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'imgpicker-err\'>No disponible</div>'">
+  // NOTA: se usan data-attributes + listeners en lugar de inyectar la URL en el atributo
+  // onclick, ya que una URL con comillas simples podia romper el HTML/JS inline generado.
+  const grid = document.getElementById('imgPickerGrid');
+  grid.innerHTML = urls.map((url, i) => `
+    <div class="imgpicker-item" id="imgpi-${i}" data-idx="${i}">
+      <img src="${esc(url)}" loading="lazy">
       <div class="imgpicker-check"></div>
     </div>
   `).join('');
+
+  grid.querySelectorAll('.imgpicker-item').forEach((item, i) => {
+    const img = item.querySelector('img');
+    img.addEventListener('error', () => {
+      item.innerHTML = '<div class="imgpicker-err">No disponible</div>';
+    }, { once: true });
+    item.addEventListener('click', () => selectImgPicker(i, urls[i]));
+  });
 }
 
 function selectImgPicker(idx, url) {
@@ -1731,7 +1775,7 @@ async function confirmImgPicker() {
 
   // Actualizar UI del detalle si esta abierto
   const wrap = document.getElementById('dImgWrap');
-  if (wrap) wrap.innerHTML = `<img src="${imgPickerSelected}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`;
+  if (wrap) wrap.innerHTML = `<img src="${esc(imgPickerSelected)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`;
   const inp = document.getElementById('dImgUrl');
   if (inp) inp.value = imgPickerSelected;
 
@@ -1889,8 +1933,8 @@ function renderTiendasList() {
   list.innerHTML = tiendas.map(t => `
     <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)">
       <div style="flex:1;min-width:0">
-        <div style="font-size:14px;color:var(--text)">${t.nombre}</div>
-        ${t.direccion ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${t.direccion}</div>` : ''}
+        <div style="font-size:14px;color:var(--text)">${esc(t.nombre)}</div>
+        ${t.direccion ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${esc(t.direccion)}</div>` : ''}
       </div>
       <button class="btn btn-outline btn-sm" onclick="openEditTiendaForm('${t.id}')">[editar]</button>
       <button class="btn btn-outline btn-sm" onclick="window._deleteTienda('${t.id}')" style="color:var(--text-muted)">x</button>
@@ -1914,7 +1958,7 @@ function renderTiendaForm() {
 
 function openAddTiendaForm() {
   tiendaFormMode = 'add';
-  // Limpiar campos expl?citamente siempre
+  // Limpiar campos explicitamente siempre
   const idEl = document.getElementById('tFormId');
   const nEl  = document.getElementById('tNombre');
   const dEl  = document.getElementById('tDireccion');
@@ -1949,7 +1993,7 @@ async function saveTiendaForm() {
 
   const nombre    = nombreEl?.value.trim() || '';
   const direccion = direccionEl?.value.trim() || '';
-  // Solo usar el id si es una edici?n real (viene de openEditTiendaForm)
+  // Solo usar el id si es una edicion real (viene de openEditTiendaForm)
   const isEdit    = tiendaFormMode !== null && tiendaFormMode !== 'add';
   const id        = isEdit ? (idEl?.value.trim() || null) : null;
 
@@ -1991,6 +2035,7 @@ async function saveTiendaForm() {
 }
 
 window._deleteTienda  = deleteTienda;
+window._recalcMin = async (id) => { await recalcularPrecioMin(id); renderPreciosPanel(id); toast('Precio minimo recalculado!'); };
 window._deletePrecio  = deletePrecio;
 window._registrarPrecio = registrarPrecio;
 
@@ -2017,7 +2062,7 @@ function openShowcase(id) {
   // Imagen
   const wrap = document.getElementById('showcaseImgWrap');
   if (p.img) {
-    wrap.innerHTML = `<img src="${p.img}" alt="${p.name}">`;
+    wrap.innerHTML = `<img src="${esc(p.img)}" alt="${esc(p.name)}">`;
   } else {
     wrap.innerHTML = `<div class="showcase-img-placeholder">
       <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".8">
@@ -2029,12 +2074,12 @@ function openShowcase(id) {
   // Badge
   const badge = document.getElementById('showcaseBadge');
   badge.className = `showcase-badge ${p.owner}`;
-  badge.innerHTML = p.owner === 'law' ? ':law: Law' : ':mily: Mily';
+  badge.innerHTML = p.owner === 'law' ? '&#x1F535; Law' : '&#x1FA77; Mily';
 
   // Nombre con stagger por palabra
   const words = p.name.split(' ');
   document.getElementById('showcaseName').innerHTML = words
-    .map((w, i) => `<span class="word" style="animation-delay:${.52 + i * .06}s">${w}</span>`)
+    .map((w, i) => `<span class="word" style="animation-delay:${.52 + i * .06}s">${esc(w)}</span>`)
     .join('<span style="display:inline-block;width:.3em"></span>');
 
   // Brand
@@ -2060,13 +2105,13 @@ function openShowcase(id) {
   if (p.precioMin) chips.push('$ ' + p.precioMin + (p.precioMinTienda ? ' en ' + p.precioMinTienda : ''));
   else if (p.price) chips.push(p.price + (p.lugar ? ' - ' + p.lugar : ''));
   meta.innerHTML = chips
-    .map((ch, i) => `<span class="showcase-chip" style="transition-delay:${.65 + i * .06 + words.length * .04}s">${ch}</span>`)
+    .map((ch, i) => `<span class="showcase-chip" style="transition-delay:${.65 + i * .06 + words.length * .04}s">${esc(ch)}</span>`)
     .join('');
 
-  // Bot?n delay
+  // Boton delay
   document.getElementById('showcaseBtn').style.transitionDelay = `${.75 + words.length * .04}s`;
 
-  // Part?culas
+  // Particulas
   spawnParticles(p.owner);
 
   // Abrir
