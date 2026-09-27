@@ -54,6 +54,29 @@
   input[type="search"]:focus { border-color: var(--gold-dim); }
   input[type="search"]::placeholder { color: var(--text-muted); }
 
+  /* HEADER ACTIONS / HAMBURGER MENU */
+  .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .menu-wrap { position: relative; display: none; flex-shrink: 0; }
+  .menu-toggle { padding: 8px 10px; }
+  .menu-dropdown {
+    position: absolute; top: calc(100% + 8px); right: 0;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    min-width: 190px; box-shadow: 0 16px 48px rgba(0,0,0,.55);
+    overflow: hidden; z-index: 150;
+    opacity: 0; transform: translateY(-6px) scale(.98);
+    pointer-events: none; transition: opacity .16s ease, transform .16s ease;
+  }
+  .menu-dropdown.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+  .menu-item {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 12px 16px; background: none; border: none; text-align: left;
+    color: var(--text); font-size: 13px; font-family: inherit; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .menu-item:hover { background: var(--surface2); }
+  .menu-item:active { background: var(--surface2); }
+  .menu-item + .menu-item { border-top: 1px solid var(--border); }
+
   /* SYNC indicator */
   .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: background .4s; flex-shrink: 0; }
   .sync-dot.syncing { background: var(--gold); animation: pulse .8s infinite alternate; }
@@ -530,11 +553,9 @@
     .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 16px clamp(12px,4vw,48px) 48px; }
     .detail-grid { grid-template-columns: 1fr; }
     .field-row { grid-template-columns: 1fr; }
-    /* Ocultar texto en botones del header para que quepan */
-    #btnTiendasOpen .btn-label,
-    #btnExportOpen .btn-label { display: none; }
-    #btnTiendasOpen,
-    #btnExportOpen { padding: 8px; }
+    /* En móvil: ocultar botones sueltos y mostrar menú hamburguesa */
+    .header-actions { display: none; }
+    .menu-wrap { display: block; }
     /* Apple 44pt minimum hit targets */
     .filter-chip { padding: 9px 14px; font-size: 11px; }
     .btn-sm { padding: 9px 12px; }
@@ -571,17 +592,38 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="search" id="searchInput" placeholder="Buscar perfume…">
     </div>
-    <button class="btn btn-outline" id="btnTiendasOpen" title="Gestionar tiendas" onclick="openTiendasModal()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0M1 12h2M21 12h2M12 1v2M12 21v2"/></svg>
-      <span class="btn-label">Tiendas</span>
-    </button>
-    <button class="btn btn-outline" id="btnExportOpen" title="Exportar lista" onclick="openExportModal()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    </button>
-    <button class="btn btn-outline" id="btnAddOpen">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Agregar
-    </button>
+    <div class="header-actions" id="headerActions">
+      <button class="btn btn-outline" id="btnTiendasOpen" title="Gestionar tiendas" onclick="openTiendasModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0M1 12h2M21 12h2M12 1v2M12 21v2"/></svg>
+        <span class="btn-label">Tiendas</span>
+      </button>
+      <button class="btn btn-outline" id="btnExportOpen" title="Exportar lista" onclick="openExportModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="btn btn-outline" id="btnAddOpen">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar
+      </button>
+    </div>
+    <div class="menu-wrap" id="menuWrap">
+      <button class="btn btn-outline menu-toggle" id="btnMenuToggle" title="Menú" aria-label="Abrir menú" aria-expanded="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="menu-dropdown" id="menuDropdown">
+        <button class="menu-item" id="menuTiendas">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0M1 12h2M21 12h2M12 1v2M12 21v2"/></svg>
+          Tiendas
+        </button>
+        <button class="menu-item" id="menuExport">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar lista
+        </button>
+        <button class="menu-item" id="menuAdd">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar perfume
+        </button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -593,6 +635,7 @@
   <div class="tabs-spacer"></div>
   <select id="sortSelect">
     <option value="name">Nombre A-Z</option>
+    <option value="recent">Más recientes</option>
     <option value="rating">Rating</option>
     <option value="price">Precio</option>
     <option value="probado">Probados primero</option>
@@ -1144,6 +1187,7 @@ function filtered() {
   if (filterProbado === 'noprobado') list = list.filter(p=>!p.probado);
   if (searchQ) { const q=searchQ.toLowerCase(); list=list.filter(p=>p.name.toLowerCase().includes(q)||p.brand.toLowerCase().includes(q)); }
   switch(sortKey) {
+    case 'recent':  list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); break;
     case 'rating':  list.sort((a,b)=>b.rating-a.rating); break;
     case 'price':   list.sort((a,b)=>(parseFloat(a.price)||9999)-(parseFloat(b.price)||9999)); break;
     case 'probado': list.sort((a,b)=>(b.probado?1:0)-(a.probado?1:0)); break;
@@ -1664,6 +1708,22 @@ window._aplicarUrlImagen = aplicarUrlImagen;
 window._toggleImgUrl     = toggleImgUrl;
 window.toggleDetailProbado = toggleDetailProbado;
 
+/* ══ MENU HAMBURGUESA (mobile) ══ */
+function toggleHeaderMenu(force) {
+  const dropdown = document.getElementById('menuDropdown');
+  const toggle   = document.getElementById('btnMenuToggle');
+  const open = force !== undefined ? force : !dropdown.classList.contains('open');
+  dropdown.classList.toggle('open', open);
+  toggle.setAttribute('aria-expanded', String(open));
+}
+document.getElementById('btnMenuToggle').onclick = e => { e.stopPropagation(); toggleHeaderMenu(); };
+document.getElementById('menuTiendas').onclick = () => { toggleHeaderMenu(false); openTiendasModal(); };
+document.getElementById('menuExport').onclick  = () => { toggleHeaderMenu(false); openExportModal(); };
+document.getElementById('menuAdd').onclick     = () => { toggleHeaderMenu(false); openAddModal(); };
+document.addEventListener('click', e => {
+  if (!document.getElementById('menuWrap').contains(e.target)) toggleHeaderMenu(false);
+});
+
 /* ══ EVENTOS ══ */
 document.getElementById('btnAddOpen').onclick     = openAddModal;
 document.getElementById('addModalClose').onclick  = closeAddModal;
@@ -1700,7 +1760,7 @@ document.getElementById('sortSelect').onchange = e=>{ sortKey=e.target.value; re
 document.getElementById('searchInput').oninput  = e=>{ searchQ=e.target.value; render(); };
 document.getElementById('addModal').onclick    = e=>{ if(e.target===e.currentTarget) closeAddModal(); };
 document.getElementById('detailModal').onclick = e=>{ if(e.target===e.currentTarget) closeDetailModal(); };
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal(); closeDetailModal(); closeShowcase(); closeTiendasModal(); closeImgPicker(); closeExportModal(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal(); closeDetailModal(); closeShowcase(); closeTiendasModal(); closeImgPicker(); closeExportModal(); toggleHeaderMenu(false); } });
 
 
 
