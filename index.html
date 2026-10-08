@@ -10,7 +10,7 @@
     --bg:        #0c0c0e;
     --surface:   #141416;
     --surface2:  #1c1c20;
-    --border:    #2a2a30;
+    --border:    #34343c;
     --gold:      #c9a96e;
     --gold-dim:  #8a6f42;
     --law:       #7b9cbe;
@@ -18,7 +18,7 @@
     --mily:      #be7b9c;
     --mily-dim:  #783d5a;
     --text:      #e8e4dc;
-    --text-muted:#8a8680;
+    --text-muted:#aaa59d;
     --radius:    12px;
     --transition:.22s ease;
   }
@@ -98,19 +98,29 @@
   .btn-danger { background: rgba(190,60,60,.15); color: #e07070; border: 1px solid rgba(190,60,60,.3); }
   .btn-danger:hover { background: rgba(190,60,60,.3); }
   .btn-sm { padding: 6px 10px; font-size: 12px; }
+  .owner-btn { display:flex; align-items:center; justify-content:center; gap:7px; }
+  .owner-btn::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--owner-color,var(--text-muted)); box-shadow:0 0 0 3px color-mix(in srgb, var(--owner-color,var(--text-muted)) 14%, transparent); }
+  #ownerLaw, #bulkLaw, #dOwnerLaw { --owner-color:var(--law); }
+  #ownerMily, #bulkMily, #dOwnerMily { --owner-color:var(--mily); }
 
-  /* TABS */
-  .tabs-row { display: flex; align-items: center; gap: 8px; padding: 20px clamp(16px,4vw,48px) 0; flex-wrap: wrap; }
+  /* CONTROLES DE COLECCIÓN */
+  .collection-controls {
+    display: grid; grid-template-columns: auto auto minmax(150px, 1fr);
+    align-items: center; gap: 12px 24px;
+    padding: 18px clamp(16px,4vw,48px) 12px;
+    border-bottom: 1px solid rgba(52,52,60,.55);
+  }
+  .tabs-row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
   .tab { padding: 8px 20px; border-radius: 100px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text-muted); transition: all var(--transition); font-family: inherit; -webkit-tap-highlight-color: transparent; }
   .tab:active { transform: scale(0.94); transition: transform 80ms ease-out; }
   .tab.active-all  { background: var(--gold);  border-color: var(--gold);  color: #0c0c0e; }
   .tab.active-law  { background: var(--law);   border-color: var(--law);   color: #0c0c0e; }
   .tab.active-mily { background: var(--mily);  border-color: var(--mily);  color: #0c0c0e; }
   .tab:hover:not(.active-all):not(.active-law):not(.active-mily) { border-color: var(--gold-dim); color: var(--text); }
-  .tabs-spacer { flex: 1; }
+  .controls-sort { justify-self: end; min-width: 150px; }
 
   /* FILTER ROW */
-  .filter-row { display: flex; align-items: center; gap: 8px; padding: 10px clamp(16px,4vw,48px) 0; flex-wrap: wrap; }
+  .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
   .filter-row-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; margin-right: 2px; }
   .filter-chip { padding: 5px 14px; border-radius: 100px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text-muted); transition: all var(--transition); font-family: inherit; -webkit-tap-highlight-color: transparent; }
   .filter-chip:active { transform: scale(0.94); transition: transform 80ms ease-out; }
@@ -121,9 +131,9 @@
   select option { background: var(--surface2); color: var(--text); }
 
   /* STATS */
-  .stats-bar { display: flex; gap: 20px; padding: 14px clamp(16px,4vw,48px); border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
+  .stats-bar { display: flex; gap: 18px; padding: 11px clamp(16px,4vw,48px); border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
   .stat { display: flex; align-items: baseline; gap: 6px; }
-  .stat-n { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: var(--gold); line-height: 1; }
+  .stat-n { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--gold); line-height: 1; }
   .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
   .stat-sep { width: 1px; background: var(--border); align-self: stretch; }
 
@@ -134,13 +144,20 @@
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; position: relative; transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition); display: flex; flex-direction: column; -webkit-tap-highlight-color: transparent; }
   .card:hover { transform: translateY(-4px); border-color: var(--gold-dim); box-shadow: 0 12px 40px rgba(0,0,0,.5); will-change: transform; }
   .card:active { transform: scale(0.97) translateY(-1px); transition: transform 80ms ease-out; border-color: var(--gold-dim); }
-  .card-badge { position: absolute; top: 10px; left: 10px; z-index: 2; padding: 3px 8px; border-radius: 100px; font-size: 10px; font-weight: 500; letter-spacing: .06em; }
+  .card-badge { position: absolute; top: 10px; left: 10px; z-index: 2; display:flex; align-items:center; gap:5px; padding: 3px 8px; border-radius: 100px; font-size: 10px; font-weight: 500; letter-spacing: .06em; }
+  .owner-dot { width:7px; height:7px; border-radius:50%; background:currentColor; display:inline-block; flex:0 0 auto; }
   .badge-law  { background: rgba(123,156,190,.2); color: var(--law);  border: 1px solid rgba(123,156,190,.3); }
   .badge-mily { background: rgba(190,123,156,.2); color: var(--mily); border: 1px solid rgba(190,123,156,.3); }
   .badge-probado { position: absolute; top: 10px; right: 10px; z-index: 2; background: rgba(201,169,110,.15); color: var(--gold); border: 1px solid rgba(201,169,110,.3); padding: 3px 8px; border-radius: 100px; font-size: 10px; }
-  .card-img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: var(--surface2); }
-  .card-img-placeholder { width: 100%; aspect-ratio: 1; background: var(--surface2); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: var(--text-muted); font-size: 11px; text-align: center; padding: 12px; }
-  .card-img-placeholder svg { opacity: .3; }
+  .card-img { width: 100%; aspect-ratio: 1; object-fit: contain; display: block; background: var(--surface2); padding:10px; }
+  .card-img-placeholder { width: 100%; aspect-ratio: 1; position:relative; overflow:hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: var(--text-muted); font-size: 11px; text-align: center; padding: 16px; }
+  .placeholder-law { background:radial-gradient(circle at 50% 35%, rgba(123,156,190,.2), transparent 48%), linear-gradient(150deg,#171d26,#1c1c20); }
+  .placeholder-mily { background:radial-gradient(circle at 50% 35%, rgba(190,123,156,.2), transparent 48%), linear-gradient(150deg,#251922,#1c1c20); }
+  .placeholder-art { width:64px; height:76px; position:relative; display:flex; flex-direction:column; align-items:center; filter:drop-shadow(0 10px 18px rgba(0,0,0,.28)); }
+  .bottle-cap { width:23px; height:13px; border:1px solid currentColor; border-bottom:0; border-radius:4px 4px 1px 1px; opacity:.58; }
+  .bottle-neck { width:16px; height:9px; border-left:1px solid currentColor; border-right:1px solid currentColor; opacity:.58; }
+  .bottle-body { width:60px; height:52px; border:1px solid currentColor; border-radius:8px 8px 14px 14px; display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',serif; font-size:16px; letter-spacing:.08em; color:var(--text); background:rgba(255,255,255,.025); }
+  .placeholder-brand { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing:.08em; text-transform:uppercase; font-size:9px; opacity:.8; }
   .card-img-loading {
     width: 100%; aspect-ratio: 1;
     background: linear-gradient(90deg, var(--surface2) 25%, #252528 50%, var(--surface2) 75%);
@@ -150,7 +167,7 @@
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   .card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
   .card-name { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 400; line-height: 1.25; letter-spacing: -0.01em; }
-  .card-brand { font-size: 11px; color: var(--text-muted); letter-spacing: .04em; }
+  .card-brand { font-size: 11px; color: var(--text-muted); letter-spacing: .04em; font-weight:400; }
   .card-stars { display: flex; gap: 1px; margin-top: 2px; align-items: center; }
   .card-price { font-size: 12px; color: var(--gold); margin-top: auto; padding-top: 6px; font-weight: 300; }
   .card-occasion { font-size: 11px; color: var(--text-muted); background: var(--surface2); border-radius: 4px; padding: 2px 6px; display: inline-block; width: fit-content; }
@@ -174,7 +191,8 @@
   .modal {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 20px 20px 0 0;
-    width: 100%; max-width: 100%; max-height: 92vh; overflow-y: auto;
+    width: 100%; max-width: 100%; max-height: 92vh; overflow: hidden;
+    display:flex; flex-direction:column;
     transform: translateY(100%);
     transition: transform .32s cubic-bezier(0.32, 0.72, 0, 1);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -194,8 +212,9 @@
   .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; color: var(--gold); letter-spacing: -0.015em; }
   .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; font-size: 18px; transition: color var(--transition); line-height:1; }
   .modal-close:hover { color: var(--text); }
-  .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; padding: 16px 24px 20px; border-top: 1px solid var(--border); }
+  .modal-body { padding: 24px; display: flex; flex:1; flex-direction: column; gap: 16px; overflow-y:auto; min-height:0; }
+  .modal-body > * { flex-shrink:0; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; padding: 16px 24px 20px; border-top: 1px solid var(--border); background:var(--surface); flex-shrink:0; box-shadow:0 -10px 24px rgba(0,0,0,.16); }
 
   /* FIELDS */
   .field { display: flex; flex-direction: column; gap: 6px; }
@@ -234,7 +253,8 @@
 
   /* DETAIL */
   .detail-img-wrap { width: 100%; aspect-ratio: 4/3; background: var(--surface2); overflow: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; max-width: 100%; }
-  .detail-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .detail-img-wrap img { width: 100%; height: 100%; object-fit: contain; padding:10px; }
+  .detail-placeholder { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
   .detail-img-searching { display: flex; flex-direction: column; gap: 10px; align-items: center; color: var(--text-muted); font-size: 12px; }
   .detail-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; line-height: 1.2; letter-spacing: -0.02em; }
   .detail-brand { color: var(--text-muted); font-size: 13px; letter-spacing: .04em; }
@@ -357,7 +377,8 @@
     width: 100%; height: 100%;
     display: flex; align-items: center; justify-content: center;
   }
-  .showcase-img-placeholder svg { opacity: .15; }
+  .showcase-img-placeholder .placeholder-art { transform:scale(1.35); color:rgba(255,255,255,.45); }
+  .showcase-img-placeholder .placeholder-brand { margin-top:20px; color:rgba(255,255,255,.55); }
 
   /* Gradiente bottom */
   .showcase-gradient {
@@ -550,15 +571,40 @@
 
   @media (max-width:600px) {
     .logo span { display: none; }
-    input[type="search"] { width: 110px; font-size: 12px; }
-    .stats-bar { gap: 12px; flex-wrap: wrap; padding: 12px clamp(12px,4vw,48px); }
-    .stat-n { font-size: 22px; }
+    header {
+      display:grid; grid-template-columns:minmax(0,1fr) auto;
+      height:auto; min-height:64px; padding-bottom:10px; gap:8px 12px;
+    }
+    .logo { grid-column:1; grid-row:1; align-self:center; }
+    .header-right { display:contents; }
+    .sync-dot { position:absolute; top:calc(env(safe-area-inset-top, 0px) + 29px); right:68px; }
+    .search-wrap { grid-column:1/-1; grid-row:2; width:100%; }
+    input[type="search"] { width: 100%; font-size: 13px; height:40px; }
+    .menu-wrap { grid-column:2; grid-row:1; display:block; align-self:center; }
+    .menu-dropdown { top:calc(112px + env(safe-area-inset-top, 0px)); }
+    .collection-controls { grid-template-columns:minmax(0,1fr) auto; gap:10px; padding:14px 16px 10px; }
+    .tabs-row { overflow-x:auto; scrollbar-width:none; }
+    .tabs-row::-webkit-scrollbar { display:none; }
+    .controls-sort { grid-column:2; grid-row:1; min-width:132px; max-width:142px; }
+    .filter-row { grid-column:1/-1; grid-row:2; overflow-x:auto; scrollbar-width:none; }
+    .filter-row::-webkit-scrollbar { display:none; }
+    .filter-row-label { display:none; }
+    .stats-bar { gap: 10px; flex-wrap: nowrap; overflow-x:auto; padding: 10px 16px; scrollbar-width:none; }
+    .stats-bar::-webkit-scrollbar { display:none; }
+    .stat-n { font-size: 21px; }
+    .stat-label { font-size:10px; }
     .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 16px clamp(12px,4vw,48px) 48px; }
+    .card-img, .card-img-placeholder, .card-img-loading { aspect-ratio:4/3; }
+    .card-img { padding:7px; }
+    .card-body { padding:12px; gap:5px; }
+    .card-name { font-size:17px; }
+    .card-price { line-height:1.35; }
+    .placeholder-art { transform:scale(.78); margin:-7px 0; }
+    .placeholder-brand { font-size:8px; }
     .detail-grid { grid-template-columns: 1fr; }
     .field-row { grid-template-columns: 1fr; }
     /* En móvil: ocultar botones sueltos y mostrar menú hamburguesa */
     .header-actions { display: none; }
-    .menu-wrap { display: block; }
     /* Apple 44pt minimum hit targets */
     .filter-chip { padding: 9px 14px; font-size: 11px; }
     .btn-sm { padding: 9px 12px; }
@@ -571,9 +617,6 @@
     .imgpicker-grid { grid-template-columns: repeat(2, 1fr); }
     /* Showcase mas pequeño */
     .showcase-card { width: 96vw; }
-    /* Tabs row scroll horizontal */
-    .tabs-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
-    .tabs-row::-webkit-scrollbar { display: none; }
   }
 </style>
 </head>
@@ -630,28 +673,28 @@
   </div>
 </header>
 
-<!-- TABS -->
-<div class="tabs-row">
-  <button class="tab active-all" data-filter="all">Todos</button>
-  <button class="tab" data-filter="law">Law</button>
-  <button class="tab" data-filter="mily">Mily</button>
-  <div class="tabs-spacer"></div>
-  <select id="sortSelect">
+<section class="collection-controls" aria-label="Filtros de la colección">
+  <div class="tabs-row" aria-label="Propietario">
+    <button class="tab active-all" data-filter="all">Todos</button>
+    <button class="tab" data-filter="law">Law</button>
+    <button class="tab" data-filter="mily">Mily</button>
+  </div>
+
+  <div class="filter-row" aria-label="Estado">
+    <span class="filter-row-label">Estado</span>
+    <button class="filter-chip active-chip" data-prob="all">Todos</button>
+    <button class="filter-chip" data-prob="probado">Probados</button>
+    <button class="filter-chip" data-prob="noprobado">Sin probar</button>
+  </div>
+
+  <select id="sortSelect" class="controls-sort" aria-label="Ordenar perfumes">
     <option value="name">Nombre A-Z</option>
     <option value="recent">Más recientes</option>
     <option value="rating">Rating</option>
     <option value="price">Precio</option>
     <option value="probado">Probados primero</option>
   </select>
-</div>
-
-<!-- FILTER CHIPS -->
-<div class="filter-row">
-  <span class="filter-row-label">Estado</span>
-  <button class="filter-chip active-chip" data-prob="all">Todos</button>
-  <button class="filter-chip" data-prob="probado">Probados</button>
-  <button class="filter-chip" data-prob="noprobado">Sin probar</button>
-</div>
+</section>
 
 <div class="stats-bar" id="statsBar"></div>
 <div class="grid" id="grid"></div>
@@ -790,8 +833,8 @@
           <div class="field">
             <label>Para quien</label>
             <div class="owner-toggle">
-              <button class="owner-btn sel-law" id="ownerLaw">🔵 Law</button>
-              <button class="owner-btn" id="ownerMily">🩷 Mily</button>
+              <button class="owner-btn sel-law" id="ownerLaw">Law</button>
+              <button class="owner-btn" id="ownerMily">Mily</button>
             </div>
           </div>
           <label class="probado-toggle" id="probadoToggle">
@@ -829,8 +872,8 @@
           <div class="field">
             <label>Para quien</label>
             <div class="owner-toggle">
-              <button class="owner-btn sel-law" id="bulkLaw">🔵 Law</button>
-              <button class="owner-btn" id="bulkMily">🩷 Mily</button>
+              <button class="owner-btn sel-law" id="bulkLaw">Law</button>
+              <button class="owner-btn" id="bulkMily">Mily</button>
             </div>
           </div>
           <div class="field">
@@ -860,14 +903,26 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- FIREBASE -->
+<script>
+  window.__babefumsStarted = false;
+  setTimeout(() => {
+    if (window.__babefumsStarted) return;
+    const screen = document.getElementById('loadingScreen');
+    if (!screen) return;
+    screen.innerHTML = `
+      <div class="loading-logo">No se pudo iniciar</div>
+      <div class="loading-sub">No fue posible cargar los recursos necesarios.</div>
+      <button class="btn btn-gold" onclick="location.reload()">Reintentar</button>`;
+  }, 10000);
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, addDoc, updateDoc,
-         deleteDoc, onSnapshot, getDocs, query, orderBy,
+         deleteDoc, onSnapshot, getDocs, query, orderBy, writeBatch, runTransaction,
          serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 /* ══ CONFIG ══ */
@@ -959,35 +1014,29 @@ async function fsSet(id, data) {
   try {
     await setDoc(doc(db, COL, id), { ...data, updatedAt: serverTimestamp() });
     syncDot('ok');
-  } catch(e) { console.error(e); syncDot('err'); toast('Error al guardar!'); }
+  } catch(e) {
+    console.error(e);
+    syncDot('err');
+    throw e;
+  }
 }
-async function fsDel(id) {
+
+async function fsUpdate(id, changes) {
   syncDot('syncing');
   try {
-    await deleteDoc(doc(db, COL, id));
+    await updateDoc(doc(db, COL, id), { ...changes, updatedAt: serverTimestamp() });
     syncDot('ok');
-  } catch(e) { console.error(e); syncDot('err'); toast('Error al eliminar!'); }
+  } catch(e) {
+    console.error(e);
+    syncDot('err');
+    throw e;
+  }
 }
 
 /* ══ TIENDAS HELPERS ══ */
 async function loadTiendas() {
-  try {
-    const snap = await getDocs(query(collection(db, COL_TIENDAS), orderBy('nombre')));
-    tiendas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch(e) { console.error('Error cargando tiendas:', e); }
-}
-
-async function saveTienda(id, data) {
-  syncDot('syncing');
-  try {
-    if (id && id.trim() !== '') {
-      await setDoc(doc(db, COL_TIENDAS, id.trim()), { nombre: data.nombre, direccion: data.direccion || '', updatedAt: serverTimestamp() });
-    } else {
-      await addDoc(collection(db, COL_TIENDAS), { nombre: data.nombre, direccion: data.direccion || '', createdAt: serverTimestamp() });
-    }
-    await loadTiendas();
-    syncDot('ok');
-  } catch(e) { console.error(e); syncDot('err'); toast('Error al guardar tienda!'); }
+  const snap = await getDocs(query(collection(db, COL_TIENDAS), orderBy('nombre')));
+  tiendas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
 async function deleteTienda(id) {
@@ -998,19 +1047,20 @@ async function deleteTienda(id) {
     await loadTiendas();
     syncDot('ok');
     toast('Tienda eliminada');
-  } catch(e) { console.error(e); syncDot('err'); }
+  } catch(e) {
+    console.error(e);
+    syncDot('err');
+    toast('No se pudo eliminar la tienda');
+  }
 }
 
 /* ══ PRECIOS HELPERS ══ */
 async function loadPrecios(perfumeId) {
-  try {
-    const snap = await getDocs(
-      query(collection(db, COL_PRECIOS, perfumeId, 'registros'), orderBy('fecha', 'desc'))
-    );
-    // ordenar tambien por precio (menor primero) para el display
-    preciosCache[perfumeId] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    return preciosCache[perfumeId];
-  } catch(e) { console.error('Error cargando precios:', e); return []; }
+  const snap = await getDocs(
+    query(collection(db, COL_PRECIOS, perfumeId, 'registros'), orderBy('fecha', 'desc'))
+  );
+  preciosCache[perfumeId] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return preciosCache[perfumeId];
 }
 
 // Extrae numero de un string de precio "$58.99" -> 58.99
@@ -1022,123 +1072,143 @@ function parsePrecio(str) {
 async function savePrecio(perfumeId, data) {
   syncDot('syncing');
   try {
-    await addDoc(collection(db, COL_PRECIOS, perfumeId, 'registros'), {
+    const priceRef = doc(collection(db, COL_PRECIOS, perfumeId, 'registros'));
+    const nuevo = {
+      id: priceRef.id,
       ...data,
-      fecha: serverTimestamp(),
       fechaStr: new Date().toLocaleDateString('es-PA', { day:'2-digit', month:'short', year:'numeric' })
+    };
+    const perfumeRef = doc(db, COL, perfumeId);
+    await runTransaction(db, async transaction => {
+      const perfumeSnap = await transaction.get(perfumeRef);
+      if (!perfumeSnap.exists()) throw new Error('El perfume ya no existe');
+      const actual = perfumeSnap.data().precioMinNum;
+      const nuevoPrecio = parsePrecio(nuevo.precio);
+      transaction.set(priceRef, { ...data, fecha:serverTimestamp(), fechaStr:nuevo.fechaStr });
+      if (actual == null || nuevoPrecio < actual) {
+        transaction.update(perfumeRef, minimumPriceFields([nuevo]));
+      }
     });
     delete preciosCache[perfumeId];
-
-    // Recalcular precioMin siempre desde todos los registros
-    await recalcularPrecioMin(perfumeId);
-
     syncDot('ok');
-    toast('Precio registrado ');
-  } catch(e) { console.error(e); syncDot('err'); toast('Error al registrar precio!'); }
+    toast('Precio registrado');
+    return true;
+  } catch(e) {
+    console.error(e);
+    syncDot('err');
+    toast('Error al registrar precio!');
+    return false;
+  }
 }
 
 async function recalcularPrecioMin(perfumeId) {
   const registros = await loadPrecios(perfumeId);
   syncDot('syncing');
+  const fields = minimumPriceFields(registros);
   try {
-    if (registros.length === 0) {
-      await updateDoc(doc(db, COL, perfumeId), {
-        precioMin: '', precioMinNum: null, precioMinTienda: '',
-        precioMinTamano: '', precioMinPresent: ''
-      });
-    } else {
-      const sorted = [...registros].sort((a,b) => (parsePrecio(a.precio)||9999) - (parsePrecio(b.precio)||9999));
-      const min = sorted[0];
-      const tiendaNombre = tiendas.find(t => t.id === min.tiendaId)?.nombre || min.tiendaNombre || '';
-      await updateDoc(doc(db, COL, perfumeId), {
-        precioMin:        min.precio,
-        precioMinNum:     parsePrecio(min.precio),
-        precioMinTienda:  tiendaNombre,
-        precioMinTamano:  min.tamano || '',
-        precioMinPresent: min.presentacion || '',
-      });
-    }
+    await updateDoc(doc(db, COL, perfumeId), fields);
     syncDot('ok');
-  } catch(e) { console.error('recalcularPrecioMin:', e); syncDot('err'); }
+  } catch(e) {
+    console.error('recalcularPrecioMin:', e);
+    syncDot('err');
+    throw e;
+  }
+}
+
+function minimumPriceFields(registros) {
+  if (registros.length === 0) {
+    return {
+      precioMin: '', precioMinNum: null, precioMinTienda: '',
+      precioMinTamano: '', precioMinPresent: ''
+    };
+  }
+  const sorted = [...registros].sort((a,b) => (parsePrecio(a.precio) ?? Infinity) - (parsePrecio(b.precio) ?? Infinity));
+  const min = sorted[0];
+  return {
+    precioMin:        min.precio,
+    precioMinNum:     parsePrecio(min.precio),
+    precioMinTienda:  tiendas.find(t => t.id === min.tiendaId)?.nombre || min.tiendaNombre || '',
+    precioMinTamano:  min.tamano || '',
+    precioMinPresent: min.presentacion || '',
+  };
 }
 
 async function deletePrecio(perfumeId, precioId) {
   if (!confirm('Eliminar este registro de precio?')) return;
+  syncDot('syncing');
   try {
-    await deleteDoc(doc(db, COL_PRECIOS, perfumeId, 'registros', precioId));
+    // Leer primero. Si la consulta falla, no se borra ni se limpia el resumen.
+    const registros = await loadPrecios(perfumeId);
+    const restantes = registros.filter(r => r.id !== precioId);
+    const batch = writeBatch(db);
+    batch.delete(doc(db, COL_PRECIOS, perfumeId, 'registros', precioId));
+    batch.update(doc(db, COL, perfumeId), minimumPriceFields(restantes));
+    await batch.commit();
     delete preciosCache[perfumeId];
-
-    // Recalcular precioMin con los registros restantes
-    const restantes = await loadPrecios(perfumeId);
-    const p = perfumes.find(x => x.id === perfumeId);
-    if (p) {
-      if (restantes.length === 0) {
-        await fsSet(perfumeId, { ...p, precioMin:'', precioMinNum:null, precioMinTienda:'', precioMinTamano:'', precioMinPresent:'' });
-      } else {
-        // Ordenar por precio numerico y tomar el minimo
-        const sorted = [...restantes].sort((a,b) => (parsePrecio(a.precio)||9999) - (parsePrecio(b.precio)||9999));
-        const min = sorted[0];
-        await fsSet(perfumeId, {
-          ...p,
-          precioMin:        min.precio,
-          precioMinNum:     parsePrecio(min.precio),
-          precioMinTienda:  min.tiendaNombre || '',
-          precioMinTamano:  min.tamano || '',
-          precioMinPresent: min.presentacion || '',
-        });
-      }
-    }
-
+    syncDot('ok');
     toast('Registro eliminado');
-    renderPreciosPanel(perfumeId);
-  } catch(e) { console.error(e); toast('Error al eliminar!'); }
+    await renderPreciosPanel(perfumeId);
+  } catch(e) {
+    console.error(e);
+    syncDot('err');
+    toast('No se pudo eliminar el registro');
+  }
 }
 
 /* ══ IMAGEN ══ */
-async function fetchImage(p, skip = 0) {
-  if (!SCRIPT_URL) return null;
+const imageCandidatesCache = new Map();
+
+function imageKey(url) {
   try {
-    const url = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}&skip=${skip}`;
-    const r = await fetch(url);
-    if (!r.ok) return null;
-    const d = await r.json();
-    return d.imageUrl || null;
-  } catch { return null; }
+    const parsed = new URL(url);
+    return `${parsed.hostname}${parsed.pathname}`.toLowerCase().replace(/\/$/, '');
+  } catch {
+    return String(url || '').trim().toLowerCase();
+  }
 }
 
-// Pedir todas las imagenes - soporta ?all=1 (script nuevo) o fallback con skips paralelos
-async function fetchAllImages(p) {
-  if (!SCRIPT_URL) return [];
-  try {
-    // Intentar primero con ?all=1 (script actualizado)
-    const urlAll = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}&all=1`;
-    const r = await fetch(urlAll);
-    if (r.ok) {
-      const d = await r.json();
-      // Si devuelve array con mas de 1 -> script nuevo
-      if (Array.isArray(d.imageUrls) && d.imageUrls.length > 1) {
-        return d.imageUrls.filter(Boolean);
-      }
-      // Si devuelve imageUrls con 1 o imageUrl -> script viejo, usar fallback
-    }
-  } catch {}
-
-  // Fallback: 9 llamadas en paralelo con skip 0-8
-  const base = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}`;
-  const promises = Array.from({length: 9}, (_, i) =>
-    fetch(`${base}&skip=${i}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => d?.imageUrl || null)
-      .catch(() => null)
-  );
-  const results = await Promise.all(promises);
-  // Deduplicar y filtrar nulos
+function uniqueImageUrls(urls) {
   const seen = new Set();
-  return results.filter(url => {
-    if (!url || seen.has(url)) return false;
-    seen.add(url);
+  return (urls || []).filter(url => {
+    if (!/^https:\/\//i.test(url || '')) return false;
+    const key = imageKey(url);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
     return true;
   });
+}
+
+// Una sola consulta a SerpApi por perfume; la lista estable permite avanzar sin repetir.
+async function fetchAllImages(p, force = false) {
+  if (!SCRIPT_URL) return [];
+  const cacheKey = `${p.name}\n${p.brand || ''}`.toLowerCase();
+  if (!force && imageCandidatesCache.has(cacheKey)) return imageCandidatesCache.get(cacheKey);
+  try {
+    const urlAll = `${SCRIPT_URL}?name=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}&all=1`;
+    const r = await fetch(urlAll);
+    if (!r.ok) throw new Error(`Buscador de imágenes: HTTP ${r.status}`);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    const urls = uniqueImageUrls(Array.isArray(d.imageUrls) ? d.imageUrls : [d.imageUrl]);
+    imageCandidatesCache.set(cacheKey, urls);
+    return urls;
+  } catch(e) {
+    console.error('Error buscando imágenes:', e);
+    return [];
+  }
+}
+
+async function nextImageCandidate(p, refreshIfExhausted = false) {
+  let urls = await fetchAllImages(p);
+  const used = new Set([p.img, ...(Array.isArray(p.imgHistory) ? p.imgHistory : [])].filter(Boolean).map(imageKey));
+  let index = urls.findIndex(url => !used.has(imageKey(url)));
+
+  if (index === -1 && refreshIfExhausted) {
+    urls = await fetchAllImages(p, true);
+    index = urls.findIndex(url => imageKey(url) !== imageKey(p.img));
+  }
+  if (index === -1) return null;
+  return { url:urls[index], index };
 }
 
 /* ══ ESTRELLAS ══ */
@@ -1190,13 +1260,24 @@ function filtered() {
   if (filterProbado === 'noprobado') list = list.filter(p=>!p.probado);
   if (searchQ) { const q=searchQ.toLowerCase(); list=list.filter(p=>p.name.toLowerCase().includes(q)||p.brand.toLowerCase().includes(q)); }
   switch(sortKey) {
-    case 'recent':  list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); break;
+    case 'recent':  list.sort((a,b)=>timestampValue(b.createdAt)-timestampValue(a.createdAt)); break;
     case 'rating':  list.sort((a,b)=>b.rating-a.rating); break;
-    case 'price':   list.sort((a,b)=>(parseFloat(a.price)||9999)-(parseFloat(b.price)||9999)); break;
+    case 'price':   list.sort((a,b)=>priceSortValue(a)-priceSortValue(b)); break;
     case 'probado': list.sort((a,b)=>(b.probado?1:0)-(a.probado?1:0)); break;
     default:        list.sort((a,b)=>a.name.localeCompare(b.name));
   }
   return list;
+}
+
+function priceSortValue(p) {
+  const value = p.precioMinNum ?? parsePrecio(p.precioMin) ?? parsePrecio(p.price);
+  return value ?? Infinity;
+}
+
+function timestampValue(value) {
+  if (typeof value === 'number') return value;
+  if (value?.toMillis) return value.toMillis();
+  return 0;
 }
 
 function renderStats() {
@@ -1214,8 +1295,21 @@ function renderStats() {
 
 function cardImgHTML(p) {
   if (p.img) return `<img class="card-img" src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy">`;
-  if (p.imgFetched) return `<div class="card-img-placeholder"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Sin imagen</span></div>`;
+  if (p.imgFetched) return cardPlaceholderHTML(p);
   return `<div class="card-img-loading"><div class="spinner"></div></div>`;
+}
+
+function cardPlaceholderHTML(p) {
+  return `<div class="card-img-placeholder placeholder-${p.owner === 'mily' ? 'mily' : 'law'}">${bottleArtHTML(p)}</div>`;
+}
+
+function bottleArtHTML(p) {
+  const initials = (p.brand || p.name || '?').split(/\s+/).filter(Boolean).slice(0,2).map(word => word[0]).join('').toUpperCase();
+  return `<div class="placeholder-art" aria-hidden="true">
+      <span class="bottle-cap"></span><span class="bottle-neck"></span>
+      <span class="bottle-body">${esc(initials)}</span>
+    </div>
+    <span class="placeholder-brand">${esc(p.brand || 'Babe Fragrances')}</span>`;
 }
 
 function renderGrid() {
@@ -1223,7 +1317,7 @@ function renderGrid() {
   if (!list.length) { grid.innerHTML=`<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><p>Sin resultados</p></div>`; return; }
   grid.innerHTML = list.map(p=>`
     <div class="card" data-id="${p.id}" onclick="window._openShowcase('${p.id}')">
-      <span class="card-badge badge-${p.owner}">${p.owner==='law'?'&#x1F535; Law':'&#x1FA77; Mily'}</span>
+      <span class="card-badge badge-${p.owner}"><span class="owner-dot"></span>${p.owner==='law'?'Law':'Mily'}</span>
       ${p.probado?'<span class="badge-probado">Probado</span>':''}
       ${cardImgHTML(p)}
       <div class="card-body">
@@ -1240,26 +1334,49 @@ function renderGrid() {
       </div>
     </div>`).join('');
 
-  // buscar imagenes faltantes
-  list.forEach(p=>{
-    if (!p.img && !p.imgFetched && SCRIPT_URL) {
-      fetchImage(p).then(url=>{
-        const updated = { ...p, imgFetched:true, img: url||'' };
-        fsSet(p.id, updated);
-      });
-    }
+  grid.querySelectorAll('.card').forEach(card => {
+    const p = list.find(item => item.id === card.dataset.id);
+    const img = card.querySelector('.card-img');
+    if (p && img) img.addEventListener('error', () => { img.outerHTML = cardPlaceholderHTML(p); }, { once:true });
   });
+
+  queueMissingImages(list);
 }
 
 function render() { renderStats(); renderGrid(); }
 
+// Evita solicitudes repetidas en cada render y actualiza solo los campos de imagen.
+const pendingImageFetches = new Set();
+const attemptedImageFetches = new Set();
+function queueMissingImages(list) {
+  if (!SCRIPT_URL) return;
+  list.forEach(p => {
+    if (p.img || p.imgFetched || pendingImageFetches.has(p.id) || attemptedImageFetches.has(p.id)) return;
+    pendingImageFetches.add(p.id);
+    attemptedImageFetches.add(p.id);
+    nextImageCandidate(p)
+      .then(candidate => candidate ? fsUpdate(p.id, {
+        img: candidate.url,
+        imgFetched: true,
+        imgIndex: candidate.index,
+        imgHistory: [candidate.url]
+      }) : fsUpdate(p.id, { img:'', imgFetched:true }))
+      .catch(e => console.error('No se pudo guardar la imagen automática:', e))
+      .finally(() => pendingImageFetches.delete(p.id));
+  });
+}
+
 /* ══ FIRESTORE LISTENER (tiempo real) ══ */
+let seedInProgress = false;
 function startListener() {
   onSnapshot(collection(db, COL), snap => {
     perfumes = snap.docs.map(d=>({ id:d.id, ...d.data() }));
     render();
     // seed si esta vacio
-    if (perfumes.length === 0) seedInitial();
+    if (perfumes.length === 0 && !seedInProgress) {
+      seedInProgress = true;
+      seedInitial().catch(showLoadError).finally(() => { seedInProgress = false; });
+    }
     // ocultar loading
     const ls = document.getElementById('loadingScreen');
     if (ls) {
@@ -1283,16 +1400,35 @@ function startListener() {
       }, 400);
     }
     syncDot('ok');
-  }, err => { console.error(err); syncDot('err'); });
+  }, err => {
+    console.error(err);
+    syncDot('err');
+    showLoadError(err);
+  });
 }
 
 async function seedInitial() {
+  // IDs deterministas + batch atómico: dos clientes no pueden crear duplicados.
+  const batch = writeBatch(db);
   const now = Date.now();
   for (let i=0; i<INITIAL.length; i++) {
     const p = INITIAL[i];
-    const id = 'p'+(now+i);
-    await fsSet(id, { name:p.name, brand:p.brand, owner:p.owner, rating:0, probado:false, price:'', lugar:'', ocasion:'', notas:'', img:'', imgFetched:false, createdAt:now+i });
+    const id = `initial-${String(i + 1).padStart(3, '0')}`;
+    batch.set(doc(db, COL, id), { name:p.name, brand:p.brand, owner:p.owner, rating:0, probado:false, price:'', lugar:'', ocasion:'', notas:'', img:'', imgFetched:false, createdAt:now+i, updatedAt:serverTimestamp() });
   }
+  await batch.commit();
+}
+
+function showLoadError(error) {
+  const ls = document.getElementById('loadingScreen');
+  if (!ls) return;
+  ls.classList.remove('hide');
+  ls.innerHTML = `
+    <div class="loading-logo">No se pudo sincronizar</div>
+    <div class="loading-sub">Revisa tu conexión e inténtalo nuevamente.</div>
+    <button class="btn btn-gold" id="retryLoad">Reintentar</button>`;
+  document.getElementById('retryLoad').onclick = () => location.reload();
+  console.error('Error de inicio:', error);
 }
 
 /* ══ MODAL AGREGAR ══ */
@@ -1336,21 +1472,38 @@ function openAddModal()  { resetAddForm(); document.getElementById('addModal').c
 function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
 
 async function saveAdd() {
-  if (addTab==='single') {
-    const name=document.getElementById('fName').value.trim();
-    if (!name){ toast('Escribe el nombre del perfume'); return; }
-    const id='p'+Date.now();
-    await fsSet(id,{ name, brand:document.getElementById('fBrand').value.trim(), owner:addOwner, rating:addRating, probado:addProbado, price:document.getElementById('fPrice').value.trim(), lugar:document.getElementById('fLugar').value.trim(), ocasion:document.getElementById('fOcasion').value, notas:document.getElementById('fNotas').value.trim(), img:'', imgFetched:false, createdAt:Date.now() });
-    closeAddModal(); toast('Perfume agregado ');
-  } else {
-    const lines=document.getElementById('fBulk').value.split('\n').map(l=>l.trim()).filter(Boolean);
-    if (!lines.length){ toast('La lista esta vacia'); return; }
-    const now=Date.now();
-    for(let i=0;i<lines.length;i++){
-      const pts=lines[i].split(',').map(s=>s.trim());
-      await fsSet('p'+(now+i),{ name:pts[0]||lines[i], brand:pts[1]||'', owner:bulkOwner, rating:0, probado:false, price:'', lugar:'', ocasion:'', notas:'', img:'', imgFetched:false, createdAt:now+i });
+  const btn = document.getElementById('addModalSave');
+  try {
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    if (addTab==='single') {
+      const name=document.getElementById('fName').value.trim();
+      if (!name){ toast('Escribe el nombre del perfume'); return; }
+      const id='p'+Date.now();
+      await fsSet(id,{ name, brand:document.getElementById('fBrand').value.trim(), owner:addOwner, rating:addRating, probado:addProbado, price:document.getElementById('fPrice').value.trim(), lugar:document.getElementById('fLugar').value.trim(), ocasion:document.getElementById('fOcasion').value, notas:document.getElementById('fNotas').value.trim(), img:'', imgFetched:false, createdAt:Date.now() });
+      closeAddModal();
+      toast('Perfume agregado');
+    } else {
+      const lines=document.getElementById('fBulk').value.split('\n').map(l=>l.trim()).filter(Boolean);
+      if (!lines.length){ toast('La lista esta vacía'); return; }
+      if (lines.length > 450) { toast('Máximo 450 perfumes por importación'); return; }
+      const now=Date.now();
+      const batch=writeBatch(db);
+      for(let i=0;i<lines.length;i++){
+        const pts=lines[i].split(',').map(s=>s.trim());
+        batch.set(doc(db, COL, 'p'+(now+i)), { name:pts[0]||lines[i], brand:pts[1]||'', owner:bulkOwner, rating:0, probado:false, price:'', lugar:'', ocasion:'', notas:'', img:'', imgFetched:false, createdAt:now+i, updatedAt:serverTimestamp() });
+      }
+      await batch.commit();
+      closeAddModal();
+      toast(`${lines.length} perfume(s) agregado(s)`);
     }
-    closeAddModal(); toast(`${lines.length} perfume(s) agregado(s) `);
+  } catch(e) {
+    console.error(e);
+    syncDot('err');
+    toast('No se pudo guardar. Inténtalo nuevamente.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
   }
 }
 
@@ -1383,8 +1536,19 @@ async function renderPreciosPanel(id) {
   const panel = document.getElementById('dPanelPrecios');
   if (!panel) return;
   panel.innerHTML = `<div style="text-align:center;padding:20px"><div class="spinner"></div></div>`;
-  let lista = await loadPrecios(id);
-  lista = [...lista].sort((a,b) => (parsePrecio(a.precio)||9999) - (parsePrecio(b.precio)||9999));
+  let lista;
+  try {
+    lista = await loadPrecios(id);
+  } catch(e) {
+    console.error('Error cargando precios:', e);
+    panel.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted)">
+      <p>No se pudieron cargar los precios.</p>
+      <button class="btn btn-outline btn-sm" id="retryPrices" style="margin-top:12px">Reintentar</button>
+    </div>`;
+    document.getElementById('retryPrices').onclick = () => renderPreciosPanel(id);
+    return;
+  }
+  lista = [...lista].sort((a,b) => (parsePrecio(a.precio) ?? Infinity) - (parsePrecio(b.precio) ?? Infinity));
   const p = perfumes.find(x => x.id === id);
   const tiendaOpts = tiendas.map(t => `<option value="${t.id}">${esc(t.nombre)}</option>`).join('');
   const noTiendas = tiendas.length === 0;
@@ -1494,12 +1658,13 @@ async function registrarPrecio(id) {
   const precio  = document.getElementById('pPrecio')?.value.trim();
   const tiendaId = document.getElementById('pTienda')?.value;
   if (!precio)   { toast('Ingresa un precio'); return; }
+  if (parsePrecio(precio) === null || parsePrecio(precio) <= 0) { toast('Ingresa un precio válido'); return; }
   if (!tiendaId) { toast('Selecciona una tienda'); return; }
   const tamano       = document.getElementById('pTamano')?.value || '';
   const presentacion = document.getElementById('pPresentacion')?.value || '';
   const tienda = tiendas.find(t => t.id === tiendaId);
-  await savePrecio(id, { precio, tiendaId, tiendaNombre: tienda?.nombre || '', tamano, presentacion });
-  renderPreciosPanel(id);
+  const saved = await savePrecio(id, { precio, tiendaId, tiendaNombre: tienda?.nombre || '', tamano, presentacion });
+  if (saved) await renderPreciosPanel(id);
 }
 
 function openDetail(id) {
@@ -1518,11 +1683,14 @@ function openDetail(id) {
     <!-- Panel INFO -->
     <div id="dPanelInfo" style="display:flex;flex-direction:column;gap:16px;">
       <div class="detail-img-wrap" id="dImgWrap">
-        ${p.img?`<img src="${esc(p.img)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`:p.imgFetched?`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`:`<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen...</span></div>`}
+        ${p.img?`<img src="${esc(p.img)}" alt="${esc(p.name)}">`:p.imgFetched?`<div class="detail-placeholder placeholder-${p.owner === 'mily' ? 'mily' : 'law'}">${bottleArtHTML(p)}</div>`:`<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen...</span></div>`}
       </div>
       <div class="img-controls">
-        <button class="btn btn-outline btn-sm" id="btnRebuscar" onclick="openImgPicker('${id}')">
+        <button class="btn btn-outline btn-sm" id="btnElegirImagen" onclick="openImgPicker('${id}')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Elegir imagen
+        </button>
+        <button class="btn btn-outline btn-sm" id="btnRebuscar" onclick="window._rebuscarImagen('${id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/></svg> Siguiente
         </button>
         <button class="btn btn-outline btn-sm" onclick="window._toggleImgUrl()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Pegar URL
@@ -1548,8 +1716,8 @@ function openDetail(id) {
       <div class="field">
         <label>Para quien</label>
         <div class="owner-toggle">
-          <button class="owner-btn${p.owner==='law'?' sel-law':''}" id="dOwnerLaw" onclick="setDetailOwner('law')">&#x1F535; Law</button>
-          <button class="owner-btn${p.owner==='mily'?' sel-mily':''}" id="dOwnerMily" onclick="setDetailOwner('mily')">&#x1FA77; Mily</button>
+          <button class="owner-btn${p.owner==='law'?' sel-law':''}" id="dOwnerLaw" onclick="setDetailOwner('law')">Law</button>
+          <button class="owner-btn${p.owner==='mily'?' sel-mily':''}" id="dOwnerMily" onclick="setDetailOwner('mily')">Mily</button>
         </div>
       </div>
 
@@ -1585,17 +1753,25 @@ function openDetail(id) {
     <button class="btn btn-gold" onclick="window._saveDetail('${id}')">Guardar</button>`;
   document.getElementById('detailModalClose2').onclick=closeDetailModal;
   document.getElementById('detailModal').classList.add('open');
+  document.querySelector('#dImgWrap img')?.addEventListener('error', e => {
+    e.currentTarget.outerHTML = `<div class="detail-placeholder placeholder-${p.owner === 'mily' ? 'mily' : 'law'}">${bottleArtHTML(p)}</div>`;
+  }, { once:true });
 
   // buscar imagen si falta
-  if (!p.img && !p.imgFetched && SCRIPT_URL) {
-    fetchImage(p).then(url=>{
-      const updated={ ...p, imgFetched:true, img:url||'' };
-      fsSet(p.id, updated);
+  if (!p.img && !p.imgFetched && SCRIPT_URL && !pendingImageFetches.has(p.id)) {
+    nextImageCandidate(p).then(candidate=>{
+      const url = candidate?.url || null;
       const wrap=document.getElementById('dImgWrap');
-      if (wrap) wrap.innerHTML = url
-        ? `<img src="${esc(url)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`
-        : `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
-    });
+      if (url) {
+        fsUpdate(p.id, { img:url, imgFetched:true, imgIndex:candidate.index, imgHistory:[url] }).catch(e => {
+          console.error(e);
+          toast('Se encontró una imagen, pero no se pudo guardar');
+        });
+        if (wrap) wrap.innerHTML = `<img src="${esc(url)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`;
+      } else if (wrap) {
+        wrap.innerHTML = `<div class="detail-placeholder placeholder-${p.owner === 'mily' ? 'mily' : 'law'}">${bottleArtHTML(p)}</div>`;
+      }
+    }).catch(e => console.error('Error buscando imagen:', e));
   }
 }
 
@@ -1607,8 +1783,7 @@ function setDetailOwner(o) {
 
 async function saveDetail(id) {
   const p=perfumes.find(x=>x.id===id); if(!p) return;
-  const updated={
-    ...p,
+  const changes={
     name:    (document.getElementById('dEditName')?.value.trim() || p.name),
     brand:   (document.getElementById('dEditBrand')?.value.trim() ?? p.brand),
     owner:   (window._detailOwner || p.owner),
@@ -1617,14 +1792,34 @@ async function saveDetail(id) {
     ocasion: document.getElementById('dOcasion')?.value ?? p.ocasion,
     notas:   document.getElementById('dNotas')?.value.trim() ?? p.notas,
   };
-  await fsSet(id, updated);
-  closeDetailModal(); toast('Guardado ');
+  try {
+    await fsUpdate(id, changes);
+    closeDetailModal();
+    toast('Guardado');
+  } catch(e) {
+    toast('No se pudieron guardar los cambios');
+  }
 }
 
 async function deletePerfume(id) {
   if (!confirm('Eliminar este perfume?')) return;
-  await fsDel(id);
-  closeDetailModal(); toast('Perfume eliminado');
+  syncDot('syncing');
+  try {
+    const prices = await getDocs(collection(db, COL_PRECIOS, id, 'registros'));
+    if (prices.size > 498) throw new Error('Demasiados precios para borrarlos de forma segura desde el navegador');
+    const batch = writeBatch(db);
+    prices.docs.forEach(price => batch.delete(price.ref));
+    batch.delete(doc(db, COL, id));
+    await batch.commit();
+    delete preciosCache[id];
+    syncDot('ok');
+    closeDetailModal();
+    toast('Perfume y sus precios eliminados');
+  } catch(e) {
+    console.error(e);
+    syncDot('err');
+    toast('No se pudo eliminar el perfume');
+  }
 }
 
 function closeDetailModal() { document.getElementById('detailModal').classList.remove('open'); detailId=null; }
@@ -1642,35 +1837,20 @@ async function rebuscarImagen(id) {
   if (btn)  { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Buscando...'; }
   if (wrap) wrap.innerHTML = '<div class="detail-img-searching"><div class="spinner"></div><span>Buscando imagen...</span></div>';
 
-  // Historial de URLs ya vistas para este perfume
-  const usedUrls = Array.isArray(p.imgHistory) ? [...p.imgHistory] : (p.img ? [p.img] : []);
-  let found = null;
-  let triedSkips = 0;
-  const MAX_TRIES = 12;
-
-  // Probar hasta MAX_TRIES skips distintos buscando una URL no usada
-  let skip = (p.imgIndex || 0) + 1;
-  while (triedSkips < MAX_TRIES) {
-    const candidate = await fetchImage(p, skip % MAX_TRIES);
-    triedSkips++;
-    if (candidate && !usedUrls.includes(candidate)) {
-      found = candidate;
-      break;
+  const candidate = await nextImageCandidate(p, true);
+  const found = candidate?.url || null;
+  const previousHistory = Array.isArray(p.imgHistory) ? p.imgHistory : (p.img ? [p.img] : []);
+  const newHistory = found ? [...previousHistory, found].slice(-20) : previousHistory;
+  if (candidate) {
+    try {
+      await fsUpdate(id, { img:found, imgFetched:true, imgIndex:candidate.index, imgHistory:newHistory });
+      Object.assign(p, { img:found, imgFetched:true, imgIndex:candidate.index, imgHistory:newHistory });
+    } catch(e) {
+      toast('Se encontró una imagen, pero no se pudo guardar');
+      if (btn) { btn.disabled = false; btn.textContent = 'Siguiente'; }
+      return;
     }
-    skip++;
   }
-
-  // Si no encontramos nada nuevo, limpiar historial y empezar de nuevo
-  if (!found) {
-    skip = 0;
-    found = await fetchImage(p, 0);
-    usedUrls.length = 0; // resetear historial
-    toast('Historial completo, volviendo al inicio');
-  }
-
-  const newHistory = found ? [...usedUrls, found].slice(-15) : usedUrls; // max 15 en historial
-  const updated = { ...p, img: found || p.img, imgFetched: true, imgIndex: skip % MAX_TRIES, imgHistory: newHistory };
-  await fsSet(id, updated);
 
   if (wrap) wrap.innerHTML = found
     ? `<img src="${esc(found)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`
@@ -1679,16 +1859,29 @@ async function rebuscarImagen(id) {
   const inp = document.getElementById('dImgUrl');
   if (inp && found) inp.value = found;
 
-  if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/></svg> Buscar otra'; }
+  if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.77"/></svg> Siguiente'; }
 
-  toast(found ? `Nueva imagen encontrada  (${newHistory.length} vistas)` : 'No se encontraron mas imagenes');
+  toast(found ? `Nueva imagen encontrada (${newHistory.length} vistas)` : 'No hay otra imagen diferente disponible');
 }
 
 async function aplicarUrlImagen(id) {
   const url=(document.getElementById('dImgUrl')?.value||'').trim();
   if(!url){ toast('Pega una URL primero'); return; }
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Protocolo no permitido');
+  } catch {
+    toast('La URL de imagen no es válida');
+    return;
+  }
   const p=perfumes.find(x=>x.id===id); if(!p) return;
-  await fsSet(id,{ ...p, img:url, imgFetched:true });
+  try {
+    const history = uniqueImageUrls([...(Array.isArray(p.imgHistory) ? p.imgHistory : []), url]).slice(-20);
+    await fsUpdate(id,{ img:url, imgFetched:true, imgHistory:history });
+  } catch(e) {
+    toast('No se pudo guardar la imagen');
+    return;
+  }
   const wrap=document.getElementById('dImgWrap');
   if(wrap) wrap.innerHTML=`<img src="${esc(url)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`;
   document.getElementById('imgUrlPanel').style.display='none';
@@ -1765,6 +1958,46 @@ document.getElementById('addModal').onclick    = e=>{ if(e.target===e.currentTar
 document.getElementById('detailModal').onclick = e=>{ if(e.target===e.currentTarget) closeDetailModal(); };
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAddModal(); closeDetailModal(); closeShowcase(); closeTiendasModal(); closeImgPicker(); closeExportModal(); toggleHeaderMenu(false); } });
 
+/* ══ ACCESIBILIDAD DE MODALES ══ */
+const dialogs = [...document.querySelectorAll('.modal-backdrop, .showcase-backdrop, .imgpicker-backdrop')];
+const dialogStack = [];
+const dialogPreviousFocus = new WeakMap();
+const focusableSelector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
+
+dialogs.forEach(dialog => {
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-hidden', 'true');
+  dialog.setAttribute('tabindex', '-1');
+  const title = dialog.querySelector('.modal-title, .imgpicker-title, .showcase-name');
+  if (title?.textContent.trim()) dialog.setAttribute('aria-label', title.textContent.trim());
+
+  new MutationObserver(() => {
+    const isOpen = dialog.classList.contains('open');
+    const stackIndex = dialogStack.indexOf(dialog);
+    dialog.setAttribute('aria-hidden', String(!isOpen));
+    if (isOpen && stackIndex === -1) {
+      dialogPreviousFocus.set(dialog, document.activeElement);
+      dialogStack.push(dialog);
+      requestAnimationFrame(() => (dialog.querySelector(focusableSelector) || dialog).focus());
+    } else if (!isOpen && stackIndex !== -1) {
+      const wasTop = stackIndex === dialogStack.length - 1;
+      dialogStack.splice(stackIndex, 1);
+      if (wasTop) dialogPreviousFocus.get(dialog)?.focus?.();
+    }
+  }).observe(dialog, { attributes:true, attributeFilter:['class'] });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Tab' || dialogStack.length === 0) return;
+  const dialog = dialogStack[dialogStack.length - 1];
+  const focusable = [...dialog.querySelectorAll(focusableSelector)].filter(el => el.offsetParent !== null);
+  if (!focusable.length) { e.preventDefault(); dialog.focus(); return; }
+  const first = focusable[0], last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+
 
 
 
@@ -1792,7 +2025,8 @@ async function openImgPicker(id) {
   document.getElementById('imgPickerModal').classList.add('open');
 
   // Buscar imagenes
-  const urls = await fetchAllImages(p);
+  const allUrls = await fetchAllImages(p);
+  const urls = allUrls.filter(url => imageKey(url) !== imageKey(p.img));
 
   if (urls.length === 0) {
     document.getElementById('imgPickerGrid').innerHTML =
@@ -1837,12 +2071,24 @@ async function confirmImgPicker() {
   btn.disabled = true; btn.textContent = 'Guardando...';
 
   const history = Array.isArray(p.imgHistory) ? p.imgHistory : [];
-  await fsSet(imgPickerPerfumeId, {
-    ...p,
-    img: imgPickerSelected,
-    imgFetched: true,
-    imgHistory: [...history, imgPickerSelected].slice(-20)
-  });
+  try {
+    await fsUpdate(imgPickerPerfumeId, {
+      img: imgPickerSelected,
+      imgFetched: true,
+      imgIndex: (await fetchAllImages(p)).findIndex(url => imageKey(url) === imageKey(imgPickerSelected)),
+      imgHistory: uniqueImageUrls([...history, imgPickerSelected]).slice(-20)
+    });
+    Object.assign(p, {
+      img:imgPickerSelected,
+      imgFetched:true,
+      imgHistory:uniqueImageUrls([...history, imgPickerSelected]).slice(-20)
+    });
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Usar esta imagen';
+    toast('No se pudo guardar la imagen');
+    return;
+  }
 
   // Actualizar UI del detalle si esta abierto
   const wrap = document.getElementById('dImgWrap');
@@ -1934,6 +2180,10 @@ async function copyExportList() {
 }
 
 function exportToExcel() {
+  if (typeof XLSX === 'undefined') {
+    toast('No se pudo cargar el exportador de Excel');
+    return;
+  }
   let lista = [...perfumes];
   if (exportFilter === 'law')       lista = lista.filter(p => p.owner === 'law');
   if (exportFilter === 'mily')      lista = lista.filter(p => p.owner === 'mily');
@@ -2073,7 +2323,7 @@ async function saveTiendaForm() {
 
   try {
     if (isEdit && id) {
-      await setDoc(doc(db, COL_TIENDAS, id), {
+      await updateDoc(doc(db, COL_TIENDAS, id), {
         nombre, direccion, updatedAt: serverTimestamp()
       });
     } else {
@@ -2106,7 +2356,15 @@ async function saveTiendaForm() {
 }
 
 window._deleteTienda  = deleteTienda;
-window._recalcMin = async (id) => { await recalcularPrecioMin(id); renderPreciosPanel(id); toast('Precio minimo recalculado!'); };
+window._recalcMin = async (id) => {
+  try {
+    await recalcularPrecioMin(id);
+    await renderPreciosPanel(id);
+    toast('Precio mínimo recalculado');
+  } catch(e) {
+    toast('No se pudo recalcular el precio mínimo');
+  }
+};
 window._deletePrecio  = deletePrecio;
 window._registrarPrecio = registrarPrecio;
 
@@ -2134,18 +2392,17 @@ function openShowcase(id) {
   const wrap = document.getElementById('showcaseImgWrap');
   if (p.img) {
     wrap.innerHTML = `<img src="${esc(p.img)}" alt="${esc(p.name)}">`;
+    wrap.querySelector('img')?.addEventListener('error', e => {
+      e.currentTarget.outerHTML = `<div class="showcase-img-placeholder">${bottleArtHTML(p)}</div>`;
+    }, { once:true });
   } else {
-    wrap.innerHTML = `<div class="showcase-img-placeholder">
-      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".8">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-    </div>`;
+    wrap.innerHTML = `<div class="showcase-img-placeholder">${bottleArtHTML(p)}</div>`;
   }
 
   // Badge
   const badge = document.getElementById('showcaseBadge');
   badge.className = `showcase-badge ${p.owner}`;
-  badge.innerHTML = p.owner === 'law' ? '&#x1F535; Law' : '&#x1FA77; Mily';
+  badge.innerHTML = `<span class="owner-dot"></span>${p.owner === 'law' ? 'Law' : 'Mily'}`;
 
   // Nombre con stagger por palabra
   const words = p.name.split(' ');
@@ -2243,13 +2500,18 @@ window.saveTiendaForm         = saveTiendaForm;
 /* ══ INIT ══ */
 buildStarPicker('addStarPicker', getAddRating, setAddRating);
 syncDot('syncing');
-loadTiendas();
+loadTiendas().catch(e => {
+  console.error('Error cargando tiendas:', e);
+  syncDot('err');
+  toast('No se pudieron cargar las tiendas');
+});
 
 // Header border on scroll
 window.addEventListener('scroll', () => {
   document.querySelector('header').classList.toggle('scrolled', window.scrollY > 4);
 }, { passive: true });
 
+window.__babefumsStarted = true;
 startListener();
 </script>
 </body>
