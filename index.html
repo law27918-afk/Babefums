@@ -923,7 +923,7 @@
 import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, addDoc, updateDoc,
          deleteDoc, onSnapshot, getDocs, query, orderBy, writeBatch, runTransaction,
-         serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+         serverTimestamp, getDoc, limit } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 /* ══ CONFIG ══ */
 const firebaseConfig = {
@@ -1032,6 +1032,139 @@ async function fsUpdate(id, changes) {
     throw e;
   }
 }
+
+/* ══ IDENTIDAD ÚNICA DE PERFUMES ══
+   Los bloqueos viven en identidadesPerfumes y se escriben en transacciones.
+   Los documentos heredados se verifican también por lectura completa.
+   Para una garantía absoluta ante clientes antiguos, restringir las escrituras
+   con reglas de Firestore o migrar todas las altas al mismo protocolo. */
+const COL_IDENTIDADES = 'identidadesPerfumes';
+function normalizar(texto) {
+  return String(texto ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().trim().replace(/\s+/g, ' ');
+}
+function clavePerfume(name, brand) {
+  return `${normalizar(name)}|${normalizar(brand)}`;
+}
+async function hashIdentidad(clave) {
+  const bytes = new TextEncoder().encode(clave);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2,'0')).join('').slice(0,24);
+}
+async function identidadRefs(name, brand) {
+  const hash = await hashIdentidad(clavePerfume(name,brand));
+  return { id: `perfume-${hash}`, ref:doc(db,COL_IDENTIDADES,`perfume-${hash}`) };
+}
+async function duplicadosExistentes(name, brand, excluirId = null) {
+  const clave = clavePerfume(name,brand);
+  const snap = await getDocs(collection(db,COL));
+  return snap.docs.filter(d => d.id !== excluirId && clavePerfume(d.data().name,d.data().brand) === clave);
+}
+async function crearPerfumeSeguro(data) {
+  const name = String(data.name ?? '').trim();
+  const brand = String(data.brand ?? '').trim();
+  if (!name) throw new Error('El nombre es obligatorio');
+  const existentes = await duplicadosExistentes(name,brand);
+  if (existentes.length) return {creado:false, id:existentes[0].id};
+  const {id,ref:identityRef} = await identidadRefs(name,brand);
+  const perfumeRef = doc(db,COL,id);
+  const clave = clavePerfume(name,brand);
+  const creado = await runTransaction(db, async tx => {
+    const [identity, perfume] = await Promise.all([tx.get(identityRef),tx.get(perfumeRef)]);
+    if (identity.exists() || perfume.exists()) return false;
+    tx.set(identityRef,{perfumeId:id,clave,createdAt:serverTimestamp()});
+    tx.set(perfumeRef,{...data,name,brand,claveNormalizada:clave,createdAt:Date.now(),updatedAt:serverTimestamp()});
+    return true;
+  });
+  return {creado,id};
+}
+async function actualizarIdentidadSegura(id, changes) {
+  const currentRef = doc(db,COL,id);
+  const current = await getDoc(currentRef);
+  if (!current.exists()) throw new Error('El perfume ya no existe');
+  const name = String(changes.name ?? current.data().name ?? '').trim();
+  const brand = String(changes.brand ?? current.data().brand ?? '').trim();
+  if (!name) throw new Error('El nombre es obligatorio');
+  const oldKey = clavePerfume(current.data().name,current.data().brand);
+  const newKey = clavePerfume(name,brand);
+  if (oldKey !== newKey && (await duplicadosExistentes(name,brand,id)).length)
+    throw new Error('Ya existe otro perfume con ese nombre y marca');
+  const newIdentity = await identidadRefs(name,brand);
+  const oldIdentity = await identidadRefs(current.data().name,current.data().brand);
+  await runTransaction(db, async tx => {
+    const refs = [currentRef,newIdentity.ref];
+    if (oldKey !== newKey && oldIdentity.ref.path !== newIdentity.ref.path) refs.push(oldIdentity.ref);
+    const reads = await Promise.all(refs.map(r => tx.get(r)));
+    if (!reads[0].exists()) throw new Error('El perfume ya no existe');
+    if (reads[1].exists() && reads[1].data().perfumeId !== id)
+      throw new Error('Ya existe otro perfume con ese nombre y marca');
+    tx.set(newIdentity.ref,{perfumeId:id,clave:newKey,updatedAt:serverTimestamp()});
+    if (refs.length > 2 && reads[2].exists() && reads[2].data().perfumeId === id)
+      tx.delete(oldIdentity.ref);
+    tx.update(currentRef,{...changes,name,brand,claveNormalizada:newKey,updatedAt:serverTimestamp()});
+  });
+}
+
+function cantidadInformacion(data) {
+  return Object.values(data).filter(v => v !== null && v !== undefined && v !== '' &&
+    v !== false && !(Array.isArray(v) && !v.length)).length;
+}
+function fechaAntiguedad(p) {
+  const n = p.createdAt?.toMillis?.() ?? Number(p.createdAt);
+  if (Number.isFinite(n) && n > 0) return n;
+  const match = /^p(\d{12,})$/.exec(p.id);
+  return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
+}
+async function limpiarDuplicadosSinPrecio() {
+  const snap = await getDocs(collection(db,COL));
+  const grupos = new Map();
+  snap.docs.forEach(d => {
+    const p = {id:d.id,...d.data()};
+    const key = clavePerfume(p.name,p.brand);
+    if (!grupos.has(key)) grupos.set(key,[]);
+    grupos.get(key).push(p);
+  });
+  const propuestas=[];
+  for (const [clave, grupo] of grupos) {
+    if (grupo.length < 2) continue;
+    const inspeccionados = await Promise.all(grupo.map(async p => {
+      const registros = await getDocs(query(collection(db,COL_PRECIOS,p.id,'registros'),limit(1)));
+      return {...p,tienePrecios:!registros.empty};
+    }));
+    const conPrecios = inspeccionados.filter(p=>p.tienePrecios);
+    const sinPrecios = inspeccionados.filter(p=>!p.tienePrecios);
+    const conservados = conPrecios.length ? conPrecios : [
+      [...sinPrecios].sort((a,b)=>cantidadInformacion(b)-cantidadInformacion(a) || fechaAntiguedad(a)-fechaAntiguedad(b) || a.id.localeCompare(b.id))[0]
+    ];
+    const eliminar = sinPrecios.filter(p=>!conservados.some(c=>c.id===p.id));
+    if (eliminar.length) propuestas.push({clave,conservados:conservados.map(p=>p.id),eliminar:eliminar.map(p=>p.id)});
+  }
+  console.table(propuestas.map(p=>({identidad:p.clave,conservar:p.conservados.join(', '),eliminar:p.eliminar.join(', ')})));
+  const total = propuestas.reduce((n,p)=>n+p.eliminar.length,0);
+  if (!total) { console.info('No hay duplicados sin precios que eliminar.'); return {eliminados:0}; }
+  if (!confirm(`Se eliminarán ${total} perfumes SIN registros de precios. Revisa console.table antes de confirmar. ¿Continuar?`))
+    return {cancelado:true,propuestas};
+  let eliminados=0,omitidos=0;
+  for (const propuesta of propuestas) {
+    for (const id of propuesta.eliminar) {
+      // Revalidar inmediatamente antes de borrar; transacción protege el documento
+      // del perfume, pero no puede bloquear inserciones concurrentes en subcolecciones.
+      const registros = await getDocs(query(collection(db,COL_PRECIOS,id,'registros'),limit(1)));
+      if (!registros.empty) { omitidos++; console.warn('Omitido por tener precios:',id); continue; }
+      const ref = doc(db,COL,id);
+      const actual = await getDoc(ref);
+      if (!actual.exists() || clavePerfume(actual.data().name,actual.data().brand)!==propuesta.clave) {omitidos++;continue;}
+      const guardados = await Promise.all(propuesta.conservados.map(cid=>getDoc(doc(db,COL,cid))));
+      if (!guardados.some(d=>d.exists() && clavePerfume(d.data().name,d.data().brand)===propuesta.clave)) {omitidos++;continue;}
+      await deleteDoc(ref);
+      delete preciosCache[id];
+      eliminados++;
+    }
+  }
+  console.info(`Limpieza terminada: ${eliminados} eliminados; ${omitidos} omitidos.`);
+  return {eliminados,omitidos};
+}
+window.limpiarDuplicadosSinPrecio = limpiarDuplicadosSinPrecio;
 
 /* ══ TIENDAS HELPERS ══ */
 async function loadTiendas() {
@@ -1203,10 +1336,7 @@ async function nextImageCandidate(p, refreshIfExhausted = false) {
   const used = new Set([p.img, ...(Array.isArray(p.imgHistory) ? p.imgHistory : [])].filter(Boolean).map(imageKey));
   let index = urls.findIndex(url => !used.has(imageKey(url)));
 
-  if (index === -1 && refreshIfExhausted) {
-    urls = await fetchAllImages(p, true);
-    index = urls.findIndex(url => imageKey(url) !== imageKey(p.img));
-  }
+  // Sin candidatos nuevos, no repetir imágenes ni consultar SerpApi de nuevo.
   if (index === -1) return null;
   return { url:urls[index], index };
 }
@@ -1367,16 +1497,10 @@ function queueMissingImages(list) {
 }
 
 /* ══ FIRESTORE LISTENER (tiempo real) ══ */
-let seedInProgress = false;
 function startListener() {
   onSnapshot(collection(db, COL), snap => {
     perfumes = snap.docs.map(d=>({ id:d.id, ...d.data() }));
     render();
-    // seed si esta vacio
-    if (perfumes.length === 0 && !seedInProgress) {
-      seedInProgress = true;
-      seedInitial().catch(showLoadError).finally(() => { seedInProgress = false; });
-    }
     // ocultar loading
     const ls = document.getElementById('loadingScreen');
     if (ls) {
@@ -1407,17 +1531,7 @@ function startListener() {
   });
 }
 
-async function seedInitial() {
-  // IDs deterministas + batch atómico: dos clientes no pueden crear duplicados.
-  const batch = writeBatch(db);
-  const now = Date.now();
-  for (let i=0; i<INITIAL.length; i++) {
-    const p = INITIAL[i];
-    const id = `initial-${String(i + 1).padStart(3, '0')}`;
-    batch.set(doc(db, COL, id), { name:p.name, brand:p.brand, owner:p.owner, rating:0, probado:false, price:'', lugar:'', ocasion:'', notas:'', img:'', imgFetched:false, createdAt:now+i, updatedAt:serverTimestamp() });
-  }
-  await batch.commit();
-}
+/* La carga inicial nunca se ejecuta automáticamente. */
 
 function showLoadError(error) {
   const ls = document.getElementById('loadingScreen');
@@ -1479,23 +1593,27 @@ async function saveAdd() {
     if (addTab==='single') {
       const name=document.getElementById('fName').value.trim();
       if (!name){ toast('Escribe el nombre del perfume'); return; }
-      const id='p'+Date.now();
-      await fsSet(id,{ name, brand:document.getElementById('fBrand').value.trim(), owner:addOwner, rating:addRating, probado:addProbado, price:document.getElementById('fPrice').value.trim(), lugar:document.getElementById('fLugar').value.trim(), ocasion:document.getElementById('fOcasion').value, notas:document.getElementById('fNotas').value.trim(), img:'', imgFetched:false, createdAt:Date.now() });
+      const resultado = await crearPerfumeSeguro({ name, brand:document.getElementById('fBrand').value.trim(), owner:addOwner, rating:addRating, probado:addProbado, price:document.getElementById('fPrice').value.trim(), lugar:document.getElementById('fLugar').value.trim(), ocasion:document.getElementById('fOcasion').value, notas:document.getElementById('fNotas').value.trim(), img:'', imgFetched:false });
+      if (!resultado.creado) { toast('Ese perfume ya existe; no se agregó'); return; }
       closeAddModal();
       toast('Perfume agregado');
     } else {
       const lines=document.getElementById('fBulk').value.split('\n').map(l=>l.trim()).filter(Boolean);
       if (!lines.length){ toast('La lista esta vacía'); return; }
       if (lines.length > 450) { toast('Máximo 450 perfumes por importación'); return; }
-      const now=Date.now();
-      const batch=writeBatch(db);
-      for(let i=0;i<lines.length;i++){
-        const pts=lines[i].split(',').map(s=>s.trim());
-        batch.set(doc(db, COL, 'p'+(now+i)), { name:pts[0]||lines[i], brand:pts[1]||'', owner:bulkOwner, rating:0, probado:false, price:'', lugar:'', ocasion:'', notas:'', img:'', imgFetched:false, createdAt:now+i, updatedAt:serverTimestamp() });
+      let agregados=0, omitidos=0;
+      const vistos = new Set();
+      for (const line of lines) {
+        const pts=line.split(',').map(t=>t.trim());
+        const name=pts[0] || line, brand=pts[1] || '';
+        const clave=clavePerfume(name,brand);
+        if (vistos.has(clave)) {omitidos++;continue;}
+        vistos.add(clave);
+        const resultado=await crearPerfumeSeguro({name,brand,owner:bulkOwner,rating:0,probado:false,price:'',lugar:'',ocasion:'',notas:'',img:'',imgFetched:false});
+        if (resultado.creado) agregados++; else omitidos++;
       }
-      await batch.commit();
       closeAddModal();
-      toast(`${lines.length} perfume(s) agregado(s)`);
+      toast(`${agregados} añadidos; ${omitidos} omitidos`);
     }
   } catch(e) {
     console.error(e);
@@ -1793,11 +1911,11 @@ async function saveDetail(id) {
     notas:   document.getElementById('dNotas')?.value.trim() ?? p.notas,
   };
   try {
-    await fsUpdate(id, changes);
+    await actualizarIdentidadSegura(id, changes);
     closeDetailModal();
     toast('Guardado');
   } catch(e) {
-    toast('No se pudieron guardar los cambios');
+    toast(e?.message || 'No se pudieron guardar los cambios');
   }
 }
 
@@ -1810,6 +1928,12 @@ async function deletePerfume(id) {
     const batch = writeBatch(db);
     prices.docs.forEach(price => batch.delete(price.ref));
     batch.delete(doc(db, COL, id));
+    const old = await getDoc(doc(db,COL,id));
+    if (old.exists()) {
+      const identity = await identidadRefs(old.data().name,old.data().brand);
+      const lock = await getDoc(identity.ref);
+      if (lock.exists() && lock.data().perfumeId === id) batch.delete(identity.ref);
+    }
     await batch.commit();
     delete preciosCache[id];
     syncDot('ok');
@@ -1840,7 +1964,7 @@ async function rebuscarImagen(id) {
   const candidate = await nextImageCandidate(p, true);
   const found = candidate?.url || null;
   const previousHistory = Array.isArray(p.imgHistory) ? p.imgHistory : (p.img ? [p.img] : []);
-  const newHistory = found ? [...previousHistory, found].slice(-20) : previousHistory;
+  const newHistory = found ? uniqueImageUrls([...previousHistory, found]) : previousHistory;
   if (candidate) {
     try {
       await fsUpdate(id, { img:found, imgFetched:true, imgIndex:candidate.index, imgHistory:newHistory });
@@ -1876,7 +2000,7 @@ async function aplicarUrlImagen(id) {
   }
   const p=perfumes.find(x=>x.id===id); if(!p) return;
   try {
-    const history = uniqueImageUrls([...(Array.isArray(p.imgHistory) ? p.imgHistory : []), url]).slice(-20);
+    const history = uniqueImageUrls([...(Array.isArray(p.imgHistory) ? p.imgHistory : []), url]);
     await fsUpdate(id,{ img:url, imgFetched:true, imgHistory:history });
   } catch(e) {
     toast('No se pudo guardar la imagen');
